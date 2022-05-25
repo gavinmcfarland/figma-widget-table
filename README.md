@@ -1,33 +1,26 @@
-Counter
+Table
 ===
 
-This sample widget should work out of the box without any build steps.
-However if you want to tweak the widget source code, read on!
+This is the source code for the FigJam table widget.
 
+## Development
 
-# Installation
-
-You'll need node.js installed. You can find the download link for it here: https://nodejs.org/en/download/
-
-
-Install the depdencies for building this widget:
+To install the dependencies
 
 ```bash
-npm ci
+npm install
 ```
 
-NOTE: This sample uses a local version of plugin-typings since the widget types are not yet publicly available.
+To develop
 
-# Building the widget
+```
+npm run dev
+```
 
-Any changes to `code.tsx` needs to be compiled into the corresponding `code.js` file.
+To create a build
 
-```bash
+```
 npm run build
-
-npm run build:watch // build and rebuild on any changes
 ```
 
-# Issues / Bugs
-
-If you find anything bugs or have any questions, please reach out in the private beta Slack channel.
+> Note: To use the Google Sheets import functionality you'll need use your own API key. Create an account at [Google Cloud](https://cloud.google.com/).

@@ -1,0 +1,19 @@
+{
+  "name": "Table",
+  "api": "1.0.0",
+  "widgetApi": "1.0.0",
+  "id": "1027585818512741999",
+  "editorType": ["figjam"],
+  "containsWidget": true,
+  "main": "dist/code.js",
+  "ui": {
+      "css": "src/ui/figma-plugin-ds.css",
+      "import": "dist/import.html",
+      "settings": "dist/settings.html",
+      "editCell": "dist/editCell.html"
+  },
+  "permissions": [
+    "currentuser",
+    "activeusers"
+  ]
+}

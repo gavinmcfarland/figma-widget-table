@@ -221,6 +221,7 @@ function Main() {
 	let tableRows = useSyncedMap("tableRows")
 
 	let [dataEndpoint, setDataEndpoint] = useSyncedState("dataEndpoint", null)
+	let [widgetSettings, setWidgetSettings] = useSyncedState("widgetSettings", null)
 
 	// useEffect(() => {
 	// 	// waitForTask(
@@ -462,9 +463,12 @@ function Main() {
 
 		let {data, active} = tableCells.get(id) || { data: '', active: false }
 		let [colId, rowId] = id.split(':')
-
+		let previousCellId = id
 		let currentCellId = id;
+
+		// Gets the colour of first cell first clicked (not previous)
 		let previousCellColor = active
+
 
 		const onmessage = (message) => {
 			if (message.type === "next-cell") {
@@ -474,9 +478,11 @@ function Main() {
 				// When we receive the data it's a string, so we need to convert any numbers to numbers
 				data = convertToNumber(data)
 
-				// Reset current cell color before moving onto next
-				// tableCells.set(currentCellId, { data, active: previousCellColor })
-
+				if (widgetSettings?.showCellsBeingEdited) {
+					// Reset current cell color before moving onto next
+					let liveData = tableCells.get(currentCellId).data
+					tableCells.set(currentCellId, { data: liveData, active: previousCellColor })
+				}
 
 				if (message.target) {
 
@@ -513,10 +519,12 @@ function Main() {
 
 					var nextCell = tableCells.get(currentCellId) || { data: '', active: false }
 
-					// Store the cell colour
-					previousCellColor = nextCell.active
-					// Set border on the next cell
-					// tableCells.set(currentCellId, { data: nextCell.data, active: figma.currentUser.color })
+					if (widgetSettings?.showCellsBeingEdited) {
+						// Store the cell colour
+						previousCellColor = nextCell.active
+						// Set border on the next cell
+						tableCells.set(currentCellId, { data: nextCell.data, active: figma.currentUser.color })
+					}
 
 					figma.ui.postMessage({ type: "post-data", data: {data: nextCell.data, rowIndex, colIndex} })
 
@@ -532,14 +540,19 @@ function Main() {
 					data = Number(message.data.data)
 				}
 
-				tableCells.set(currentCellId, { data, active })
-				// tableCells.set(currentCellId, { data, active: figma.currentUser.color })
+
+				if (widgetSettings?.showCellsBeingEdited) {
+					tableCells.set(currentCellId, { data, active: figma.currentUser.color })
+				}
+				else {
+					tableCells.set(currentCellId, { data, active })
+				}
+
 				// figma.commitUndo();
 
 			}
 
 			if (message.type === "resize-ui") {
-
 				figma.ui.resize(300, cellHeight(message.data.textareaHeight))
 			}
 
@@ -553,9 +566,12 @@ function Main() {
 				figma.clientStorage.getAsync("userPreferences").then((settings) => {
 					settings = settings || { navigateOnEnter: false }
 
-					// Set colour of cell to be active
-					// tableCells.set(id, { data, active: figma.currentUser.color })
-					figma.showUI(`<style>${__uiFiles__["css"]}</style>${__uiFiles__["editCell"]}`, { width: 300, height: cellHeight(31) });
+					if (widgetSettings?.showCellsBeingEdited) {
+						// Set colour of cell to be active
+						tableCells.set(id, { data, active: figma.currentUser.color })
+					}
+
+					figma.showUI(`<style>${__uiFiles__["css"]}</style>${__uiFiles__["editCell"]}`, { width: 300, height: cellHeight(31), themeColors: true });
 					figma.ui.postMessage({ type: "show-ui", settings })
 					figma.ui.postMessage({ type: "post-data", data: {data, rowIndex, colIndex } })
 
@@ -563,10 +579,21 @@ function Main() {
 
 				figma.ui.on('message', onmessage)
 
-					// figma.on('close', () => {
+				if (widgetSettings?.showCellsBeingEdited) {
+					figma.on('close', () => {
 					// Reset active state
-					// 	tableCells.set(currentCellId, { data, active: previousCellColor })
-					// })
+						let temp_active = tableCells.get(currentCellId).active
+						let liveData = tableCells.get(currentCellId).data
+						// // if (previousCellColor) {
+
+						// // } else {
+							previousCellColor = temp_active === figma.currentUser.color ? previousCellColor : false
+						// }
+
+
+						tableCells.set(currentCellId, { data: liveData, active: previousCellColor })
+					})
+				}
 
 
 		})
@@ -788,7 +815,7 @@ function Main() {
 					parent.postMessage({ pluginMessage: {type: 'resize-column', size: 'large'} }, '*');
 				})
 				</script>
-			`, { width: 200, height: 386 });
+			`, { width: 200, height: 386, themeColors: true });
 			// position: {x: event.canvasX - 130, y: event.canvasY + 20}
 						figma.ui.onmessage = (message) => {
 
@@ -805,11 +832,11 @@ function Main() {
 							}
 
 							if (message.type === 'sort-ascending') {
-								sortTable(colId)
+								sortTable(colId, rows)
 							}
 
 							if (message.type === 'sort-descending') {
-								sortTable(colId, true)
+								sortTable(colId, rows, true)
 							}
 
 							if (message.type === 'resize-column') {
@@ -885,7 +912,7 @@ function Main() {
 					parent.postMessage({ pluginMessage: {type: 'insert-below'} }, '*');
 				})
 				</script>
-			`, { width: 200, height: 208 });
+			`, { width: 200, height: 208, themeColors: true});
 						figma.ui.onmessage = (message) => {
 
 							if (message.type === 'delete-row') {
@@ -995,19 +1022,30 @@ function Main() {
 		return pass
 	}
 
-	function sortTable(id, sortDescending = false) {
+	function sortTable(id, rows, sortDescending = false) {
 
 		// Find the entries in that column
+
+		// Remove the first entry which is the header?
+		var firstColEntry
+
 		var colEntries = []
+
+		// FIXME: Can't rely on order of map
 		for (let i = 0; i < tableCells.entries().length; i++) {
 			var entry = tableCells.entries()[i]
 			let [colId, rowId] = entry[0].split(":")
-			if (colId === id) {
+			if (colId === id && !entry[0].endsWith(rows[1])) {
 				colEntries.push(entry)
+			}
+
+			if (entry[0].endsWith(rows[1])) {
+				firstColEntry = entry
 			}
 		}
 
-		var firstColEntry = colEntries.shift()
+
+
 
 		// Sort the entries in that column
 		colEntries.sort((a, b) => {
@@ -1020,12 +1058,16 @@ function Main() {
 
 		if (sortDescending) colEntries.reverse()
 
+		// Add back the first entry which is the header?
 		colEntries.splice(0, 0, firstColEntry)
 
 		// Assign a new order to the rows
 		colEntries.map((entry, i) => {
-			let [colId, rowId] = entry[0].split(":")
-			tableRows.set(rowId, { ...entry[1], order: i })
+			if (entry) {
+				let [colId, rowId] = entry[0].split(":")
+				tableRows.set(rowId, { order: i })
+			}
+
 		})
 
 	}
@@ -1206,9 +1248,9 @@ function Main() {
 						figma.showUI(`
 					<style>${__uiFiles__["css"]}</style>
 					${__uiFiles__["settings"]}
-          `, { width: 300, height: 272 });
+          `, { width: 300, height: 300, themeColors: true });
 
-						figma.ui.postMessage({ type: "post-settings", settings })
+						figma.ui.postMessage({ type: "post-settings", settings, widgetSettings })
 
 
 						function exportToString(rows, cols) {
@@ -1247,6 +1289,9 @@ function Main() {
 							if (message.type === "settings-saved") {
 								figma.clientStorage.setAsync("userPreferences", message.settings)
 							}
+							if (message.type === "widget-settings-saved") {
+								setWidgetSettings(message.settings)
+							}
 							if (message.type === "clear-table") {
 								tableCells.entries().map((entry) => {
 									tableCells.delete(entry[0])
@@ -1270,7 +1315,7 @@ function Main() {
 					figma.showUI(`
 					<style>${__uiFiles__["css"]}</style>
 					${__uiFiles__["import"]}
-          `, { width: 340, height: 292 });
+          `, { width: 340, height: 292, themeColors: true });
 
 					// if (dataEndpoint) {
 						figma.ui.postMessage({ dataEndpoint })

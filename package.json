@@ -8,7 +8,7 @@
     "build:tsc": "tsc",
     "dev:tsc": "tsc --watch",
     "dev": "rollup -c -w & ./node_modules/.bin/esbuild src/code/code.tsx --bundle --outfile=dist/code.js --watch",
-    "build": "rollup -c & ./node_modules/.bin/esbuild src/code/code.tsx --bundle --outfile=dist/code.js",
+    "build": "rollup -c && ./node_modules/.bin/esbuild src/code/code.tsx --bundle --outfile=dist/code.js",
     "start": "sirv public --no-clear"
   },
   "author": "Gavin McFarland",

@@ -4,6 +4,7 @@
 	let exportFile
 	let navigateOnEnterInput
 	let clearTable
+	let showCellsBeingEdited
 
 	function saveAs(content, filename) {
 		const blob = new File([content], filename, { type: "text/plain" });
@@ -38,6 +39,7 @@
 
 		if (message.type === "post-settings") {
 			navigateOnEnterInput.checked = message.settings.navigateOnEnter
+			showCellsBeingEdited.checked = message.widgetSettings.showCellsBeingEdited
 		}
 
 		if (message.type === "export-data") {
@@ -59,6 +61,11 @@
 			parent.postMessage({ pluginMessage: { type: "settings-saved", settings: { navigateOnEnter: navigateOnEnterInput.checked } } }, '*');
 		})
 
+		showCellsBeingEdited.addEventListener('input', () => {
+			console.log("toggled")
+			parent.postMessage({ pluginMessage: { type: "widget-settings-saved", settings: { showCellsBeingEdited: showCellsBeingEdited.checked } } }, '*');
+		})
+
 
 
 		clearTable.addEventListener('click', () => {
@@ -74,7 +81,11 @@
 	<p class="type--bold">Settings</p>
 	<div class="checkbox">
 		<input id="navigateOnEnterInput" bind:this="{navigateOnEnterInput}" type="checkbox" class="checkbox__box">
-		<label for="navigateOnEnterInput" class="checkbox__label">Navigate to cell below on <key>enter</key></label>
+		<label for="navigateOnEnterInput" class="checkbox__label">Navigate to cell below on enter</label>
+	</div>
+	<div class="checkbox">
+		<input id="showCellsBeingEdited" bind:this="{showCellsBeingEdited}" type="checkbox" class="checkbox__box">
+		<label for="showCellsBeingEdited" class="checkbox__label">Highlight cells being edited <span class="experimental">Experimental</span></label>
 	</div>
 	<hr>
 	<p class="type--bold">Export data</p>
@@ -85,3 +96,17 @@
 	<button class="button button--primary-destructive mt-xsmall" id="clearTable" bind:this="{clearTable}">Clear Table</button>
 
 </div>
+
+<style>
+	.experimental {
+		border-radius: 2px;
+		padding: 0 2px;
+		margin-left: 6px;
+		font-weight: bold;
+		background-color: var(--figma-color-bg-brand-tertiary);
+		color: var(--figma-color-bg-brand);
+	}
+	.checkbox {
+		margin-left: -8px;
+	}
+</style>

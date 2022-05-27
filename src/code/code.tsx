@@ -1026,39 +1026,50 @@ function Main() {
 
 		// Find the entries in that column
 
-		// Remove the first entry which is the header?
-		var firstColEntry
-
 		var colEntries = []
 
-		// FIXME: Can't rely on order of map
-		for (let i = 0; i < tableCells.entries().length; i++) {
-			var entry = tableCells.entries()[i]
-			let [colId, rowId] = entry[0].split(":")
-			if (colId === id && !entry[0].endsWith(rows[1])) {
-				colEntries.push(entry)
-			}
+		// FIXME: Can't rely on order of map. Try finding another way to get entries because some are undefined.
+		for (let i = 0; i < rows.length; i++) {
+			let rowId = rows[i]
+			let colId = id
+			let cellId = `${colId}:${rowId}`
+			var setData = tableCells.get(cellId) || { data: '', active: false };
 
-			if (entry[0].endsWith(rows[1])) {
-				firstColEntry = entry
-			}
+			setData.data = convertToNumber(setData.data)
+			console.log(setData.data)
+
+			colEntries.push([cellId, setData])
+
 		}
 
+
+
+		// Remove the entry which is the letterCell then the header?
+		var firstColEntry = colEntries.shift()
+		var secondColEntry = colEntries.shift()
 
 
 
 		// Sort the entries in that column
 		colEntries.sort((a, b) => {
-			if (a[1].data > b[1].data) return 1;
-			if (b[1].data > a[1].data) return -1;
+			// // Ensures that blank entries are allways at the bottom
+			if(a[1].data === '' || a[1].data === null) return 1;
+			if(b[1].data === '' || b[1].data === null) return -1;
 
-			return 0;
+			if(a[1].data === b[1].data) return 0;
+
+			// Reverse the sorting
+			if (sortDescending) {
+				return a[1].data > b[1].data ? -1 : 1;
+			}
+			else {
+				return a[1].data < b[1].data ? -1 : 1;
+			}
+
 		})
 
-
-		if (sortDescending) colEntries.reverse()
-
 		// Add back the first entry which is the header?
+		colEntries.splice(0, 0, secondColEntry)
 		colEntries.splice(0, 0, firstColEntry)
 
 		// Assign a new order to the rows

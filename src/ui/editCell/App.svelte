@@ -164,9 +164,30 @@
 
 		colElement.innerHTML = `${alphabet[colIndex]}`
 		rowElement.innerHTML = `${rowIndex}`
+
 	}
 
 	onMount(async () => {
+
+		parent.postMessage({ pluginMessage: { type: "window-loaded" } }, '*');
+		console.log("window loaded")
+
+		// setInterval(() => {
+		// 	if (document.hasFocus()) {
+		// 		console.log("window has focus")
+		// 		editor.focus();
+		// 	}
+		// 	else {
+		// 		console.log("window does not have focus")
+		// 		editor.focus();
+		// 	}
+		// }, 200)
+
+		// window.addEventListener('blur', () => {
+		// 	console.log("window has lost focus")
+		// 	editor.focus();
+		// })
+
 		editor.addEventListener('keydown', function (e) {
 
 			var caretPosition = this.selectionStart
@@ -203,14 +224,16 @@
 
 <svelte:window on:message={onLoad} />
 
-<div class="m-xsmall type--small">
-	<p>Cell <span id="colElement" bind:this="{colElement}"></span><span id="rowElement" bind:this="{rowElement}"></span></p>
-	<div class="input grow-wrap">
-		<textarea id="editor" bind:this="{editor}" class="textarea" rows="1" style="max-height: 277px; min-height: auto;"></textarea>
+<body>
+	<div class="m-xsmall type--small">
+		<p>Cell <span id="colElement" bind:this="{colElement}"></span><span id="rowElement" bind:this="{rowElement}"></span></p>
+		<div class="input grow-wrap">
+			<textarea id="editor" bind:this="{editor}" class="textarea" rows="1" style="max-height: 277px; min-height: auto;"></textarea>
+		</div>
+		<p class="type-small secondary-text">Press <key>ctrl/cmd + enter</key> to create a new line</p>
+		<button class="button button--primary mt-xsmall" id="button" bind:this="{button}">Save</button>
 	</div>
-	<p class="type-small" style="color: var(--black3)">Press <key>ctrl/cmd + enter</key> to create a new line</p>
-	<button class="button button--primary mt-xsmall" id="button" bind:this="{button}">Save</button>
-</div>
+</body>
 
 <style>
 	.grow-wrap {
@@ -240,7 +263,6 @@
 	.grow-wrap>textarea,
 	.grow-wrap::after {
 		/* Identical styling required!! */
-		border: 1px solid grey;
 		padding: 8px;
 		font: inherit;
 		max-height: 250px;
@@ -248,5 +270,8 @@
 		/* Place on top of each other */
 		grid-area: 1 / 1 / 2 / 2;
 		letter-spacing: 0.12px;
+	}
+	.grow-wrap::after {
+		margin: 2px 0;
 	}
 </style>

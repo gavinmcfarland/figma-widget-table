@@ -1,6 +1,6 @@
 var _ = require('lodash');
 const { widget } = figma
-const { Frame, Text, Ellipse, Rectangle, SVG, useSyncedState, useSyncedMap, usePropertyMenu, AutoLayout, useWidgetId, useEffect, waitForTask } = widget
+const { Frame, Text, Ellipse, Rectangle, SVG, useSyncedState, useSyncedMap, usePropertyMenu, AutoLayout, useWidgetId, useEffect, waitForTask, Input } = widget
 
 // TODO: Add ability to show/add title
 // TODO: Add ability to move  columns rows
@@ -14,6 +14,13 @@ const { Frame, Text, Ellipse, Rectangle, SVG, useSyncedState, useSyncedMap, useP
 // TODO: Show currently selected cell
 // TODO: Consider positioning menus using cursor coordinates
 // TODO: Consider updating iframes to use names of actions
+
+// TODO: Use array instead of string to manage highlighted state of cell DONE
+// TODO: See if there's a way to enable refocusing input when UI is moved DISCARD
+// TODO: Add setting to change theme of widget
+// TODO: Customise border radius of last cell DONE
+
+
 
 console.clear()
 
@@ -84,103 +91,7 @@ const alphabet = [
 
 
 
-function LetterRow({ children }) {
-	return (
-		<AutoLayout name="LetterRow"
-			blendMode="pass-through"
-			fill={{ "type": "solid", "visible": true, "opacity": 1, "blendMode": "normal", "color": { "r": 0.9624999761581421, "g": 0.9624999761581421, "b": 0.9624999761581421, "a": 1 } }}
-			cornerRadius={{ "topLeft": 0, "topRight": 0, "bottomLeft": 0, "bottomRight": 0 }}
-			padding={{ "top": 0, "right": 0, "bottom": 0, "left": 0 }}
-			effect={[{ "type": "inner-shadow", "color": { "r": 0.8999999761581421, "g": 0.8999999761581421, "b": 0.8999999761581421, "a": 1 }, "offset": { "x": 0, "y": -1 }, "spread": 0, "visible": true, "blendMode": "normal", "blur": 0 }]}
-			overflow="hidden">
-			{children}
-		</AutoLayout>
-	)
-}
 
-
-
-
-
-function Row({children, rowIndex}) {
-	return (
-		<AutoLayout name="Row"
-			y={71}
-			blendMode="pass-through"
-			fill={{ "type": "solid", "visible": true, "opacity": 1, "blendMode": "normal", "color": { "r": 1, "g": 1, "b": 1, "a": 1 } }}
-			cornerRadius={{ "topLeft": 0, "topRight": 0, "bottomLeft": 0, "bottomRight": 0 }}
-			padding={{ "top": 0, "right": 0, "bottom": 1, "left": 0 }}
-			effect={[{ "type": "inner-shadow", "color": { "r": 0.8999999761581421, "g": 0.8999999761581421, "b": 0.8999999761581421, "a": 1 }, "offset": { "x": 0, "y": -1 }, "spread": 0, "visible": true, "blendMode": "normal", "blur": 0 }]}
-			overflow="hidden">
-			{children}
-		</AutoLayout>
-	)
-
-}
-
-function Rows({children}) {
-	return (
-		<AutoLayout name="Rows"
-			y={6}
-			blendMode="pass-through"
-			cornerRadius={{ "topLeft": 0, "topRight": 0, "bottomLeft": 0, "bottomRight": 0 }}
-			padding={{ "top": 0, "right": 0, "bottom": 0, "left": 0 }}
-			direction="vertical"
-			overflow="visible">
-			{children}
-		</AutoLayout>
-	)
-}
-
-function TopBorder({color}) {
-
-	var height = 8
-	var fill = { "type": "solid", "visible": true, "opacity": 1, "blendMode": "normal", "color": color }
-
-	if (color === "ukraine") {
-		fill = {
-			type: "gradient-linear",
-			gradientHandlePositions: [
-			  { x: 0.5, y: 0 },
-			  { x: 1, y: 1 },
-			  { x: 0, y: 0 }
-			],
-			gradientStops: [
-			  { position: 0, color: {"r":0,"g":0.4156862795352936,"b":0.8588235378265381,"a":1} },
-			  { position: 0.499, color: {"r":0,"g":0.4156862795352936,"b":0.8588235378265381,"a":1} },
-			  { position: 0.5, color: {"r":0.9921568632125854,"g":0.8313725590705872,"b":0.0117647061124444,"a":1} },
-			  { position: 1, color: {"r":0.9921568632125854,"g":0.8313725590705872,"b":0.0117647061124444,"a":1} }
-			]
-		  }
-	}
-	return (
-		<Frame width="fill-parent"
-			height={height}
-			name="Border"
-			fill={fill}
-			cornerRadius={{ "topLeft": 0, "topRight": 0, "bottomLeft": 0, "bottomRight": 0 }}
-			overflow="hidden">
-		</Frame>
-	)
-}
-
-function Table({children}) {
-	return (
-		<AutoLayout name="Table"
-			x={11234}
-			y={1555}
-			blendMode="pass-through"
-			fill={{ "type": "solid", "visible": true, "opacity": 1, "blendMode": "normal", "color": { "r": 1, "g": 1, "b": 1, "a": 1 } }}
-			stroke={{ "type": "solid", "visible": true, "opacity": 0.10000000149011612, "blendMode": "normal", "color": { "r": 0, "g": 0, "b": 0, "a": 0.10000000149011612 } }}
-			strokeWidth={0.5}
-			cornerRadius={{ "topLeft": 8, "topRight": 8, "bottomLeft": 8, "bottomRight": 8 }}
-			effect={[{ "type": "drop-shadow", "color": { "r": 0, "g": 0, "b": 0, "a": 0.15000000596046448 }, "offset": { "x": 0, "y": 2 }, "spread": 0, "visible": true, "blendMode": "normal", "showShadowBehindNode": true, "blur": 4 }]}
-			direction="vertical"
-			overflow="hidden">
-			{children}
-		</AutoLayout>
-	)
-}
 
 function cellHeight(height) {
 	if (height > 277) {
@@ -191,6 +102,8 @@ function cellHeight(height) {
 
 	return height
 }
+
+
 
 function Main() {
 
@@ -219,20 +132,56 @@ function Main() {
 	let tableCells = useSyncedMap("tableCells")
 	let tableCols = useSyncedMap("tableCols")
 	let tableRows = useSyncedMap("tableRows")
+	let activeCells = useSyncedMap("activeCells")
 
+	let [widgetTheme, setWidgetTheme] = useSyncedState("widgetTheme", "light");
 	let [dataEndpoint, setDataEndpoint] = useSyncedState("dataEndpoint", null)
 	let [widgetSettings, setWidgetSettings] = useSyncedState("widgetSettings", null)
+	let [widgetName, setWidgetName] = useSyncedState("widgetName", "")
 
-	// useEffect(() => {
-	// 	// waitForTask(
-	// 	return new Promise(resolve => {
-	// 		figma.clientStorage.getAsync("userPreferences").then((settings) => {
-	// 			setUserPreferences(settings)
-	// 			resolve()
-	// 		})
-	// 		resolve()
-	// 	})
-	// })
+	// Check activeUsers still exist
+	useEffect(() => {
+		// waitForTask(new Promise(resolve => {
+
+
+			// figma.on('close', () => {
+				// Find inactive users
+				let entries = activeCells.entries()
+
+				entries.map(entry => {
+					let inactiveUsers: any = [];
+					let activeUserIds = figma.activeUsers.map(a => a.id);
+					let activeUserSessionIds = figma.activeUsers.map(a => a.sessionId);
+
+					entry[1].users.map((user) => {
+
+						if (!(activeUserIds.includes(user.id) && activeUserSessionIds.includes(user.sessionId))) {
+
+							// Remove user from list of users
+							entry[1].users.splice(entry[1].users.indexOf(user), 1)
+							inactiveUsers.push(user)
+
+						}
+
+						if (inactiveUsers.length > 0) {
+
+							if (entry[1].users.length > 0) {
+								activeCells.set(entry[0], entry[1])
+							}
+							else {
+								activeCells.delete(entry[0])
+							}
+						}
+
+					})
+
+				})
+
+				// resolve()
+			// })
+
+		// }))
+	})
 
 
 	// let [widgetColor, setWidgetColor] = useSyncedState("widgetColor", "#9747FF")
@@ -275,8 +224,90 @@ function Main() {
 		return newArray
 	}
 
+	function addActiveCell(id) {
+
+		let activeCell = activeCells.get(id)
+		let currentUser = {
+			id: figma.currentUser.id,
+			sessionId: figma.currentUser.sessionId,
+			color: figma.currentUser.color
+		}
+
+		// If activeCell doesn't exist, create it
+		if (!activeCell) {
+			activeCells.set(id , {
+				users: [currentUser]
+			})
+
+		}
+		// If it does then add new user
+		else {
+			if (activeCell.users) {
+				if (!activeCell.users.some(user => user.id === currentUser.id && user.sessionId === currentUser.sessionId)) {
+					activeCell.users.unshift(currentUser)
+					activeCells.set(id, {users: activeCell.users})
+				}
+			}
+
+
+		}
+
+
+
+	}
+
+	function removeActiveCell(id) {
+
+		let activeCell = activeCells.get(id)
+
+		// filter active users
+		if (activeCell) {
+			// Remove user entry if id and session dones't match current user
+			let users = activeCell.users.filter((user) => !(user.id === figma.currentUser.id && user.sessionId === figma.currentUser.sessionId))
+
+			// If no users then remove active cell from map
+			if (users.length === 0) {
+				activeCells.delete(id)
+			}
+			else {
+				// Otherwise set new data to entry in map
+				activeCell.users = users
+				activeCells.set(id, activeCell)
+			}
+		}
+
+	}
+
+	function setTheme(color) {
+		/*
+		From this W3C document: http://www.webmasterworld.com/r.cgi?f=88&d=9769&url=http://www.w3.org/TR/AERT#color-contrast
+		Color brightness is determined by the following formula:
+		((Red value X 299) + (Green value X 587) + (Blue value X 114)) / 1000
+		*/
+		var threshold = 160; /* about half of 256. Lower threshold equals more dark text on dark background  */
+		var cBrightness = ((color.r * 255 * 299) + (color.g * 255 * 587) + (color.b * 255 * 114)) / 1000;
+
+		if (cBrightness > threshold || figma.editorType === "figjam"){
+			setWidgetTheme("light")
+		}
+		else {
+			setWidgetTheme("dark")
+		}
+	}
+
+
+
 	useEffect(() => {
 		if (!isInitialized) {
+
+
+			setTheme(figma.currentPage.backgrounds[0].color)
+
+			// let color = {r: 0.11764705926179886, g: 0.11764705926179886, b: 0.11764705926179886}
+			// if (JSON.stringify(figma.currentPage.backgrounds[0].color) === JSON.stringify(color)) {
+			// 	console.log("dark theme")
+			// 	setWidgetTheme("dark")
+			// }
 			numToIndices(3).map((item, i) => {
 				tableCols.set(genRandomId(i), { order: i, size: "medium" })
 			})
@@ -289,21 +320,99 @@ function Main() {
 		}
 	})
 
-	// useEffect(async () => {
-	// 	waitForTask(new Promise(resolve => {
-	// 		figma.on('close', () => {
-	// 			if (lastActiveCell) {
-	// 				tableCells.set(...lastActiveCell)
-	// 			}
-	// 		})
-	// 		resolve()
-	// 	}))
-	// })
+	let theme : any;
+
+	if (widgetTheme === "light") {
+		theme = {
+			colorBg: "#fff",
+			colorBgSecondary: "#f5f5f5",
+			colorBgTertiary: "#e6e6e6",
+			colorBgHeaderCell: "#f5f5f5",
+			colorText: "#000",
+			colorTextSecondary: { "type": "solid", "visible": true, "opacity": 1, "blendMode": "normal", "color": { "r": 0, "g": 0, "b": 0, "a": 0.8 } },
+			colorTextTertiary: { "type": "solid", "visible": true, "blendMode": "normal", "color": { "r": 0, "g": 0, "b": 0, "a": 0.4 } },
+			colorBorder: "#e6e6e6",
+			colorBorderGradient: {
+				type: "gradient-linear",
+				gradientHandlePositions:
+				  [
+					{ x: 0.5, y: 0 },
+					{ x: 0.5, y: 1 },
+					{ x: 1, y: 0 },
+				  ],
+				gradientStops: [
+				  {
+					position: 0,
+					color: {
+					  r: 0.9019607901573181,
+					  g: 0.9019607901573181,
+					  b: 0.9019607901573181,
+					  a: 0,
+					},
+				  },
+				  {
+					position: 0.7135416865348816,
+					color: {
+					  r: 0.9019607901573181,
+					  g: 0.9019607901573181,
+					  b: 0.9019607901573181,
+					  a: 1,
+					},
+				  },
+				],
+			  },
+			shadowBorderLeft: [{ "type": "inner-shadow", "color": { "r": 0.8980392217636108, "g": 0.8980392217636108, "b": 0.8980392217636108, "a": 1 }, "offset": { "x": 1, "y": 0 }, "spread": 0, "visible": true, "blendMode": "normal", "showShadowBehindNode": false, "blur": 0 }],
+			shadowBorderBottom: [{ "type": "inner-shadow", "color": { "r": 0.8980392217636108, "g": 0.8980392217636108, "b": 0.8980392217636108, "a": 1 }, "offset": { "x": 0, "y": -1 }, "spread": 0, "visible": true, "blendMode": "normal", "showShadowBehindNode": false, "blur": 0 }]
+		}
+	}
+
+	if (widgetTheme === "dark") {
+		theme = {
+			colorBg: "#2c2c2c",
+			colorBgSecondary: "#383838",
+			colorBgTertiary: "#444444",
+			colorBgHeaderCell: "#383838",
+			colorText: "#fff",
+			colorTextSecondary: { "type": "solid", "visible": true, "blendMode": "normal", "color": { "r": 1, "g": 1, "b": 1, "a": 0.8 } },
+			colorTextTertiary: { "type": "solid", "visible": true, "blendMode": "normal", "color": { "r": 1, "g": 1, "b": 1, "a": 0.4 } },
+			colorBorder: "#444444",
+			colorBorderGradient: {
+				type: "gradient-linear",
+				gradientHandlePositions:
+				  [
+					{ x: 0.5, y: 0 },
+					{ x: 0.5, y: 1 },
+					{ x: 0, y: 0 },
+				  ],
+				gradientStops: [
+				  {
+					position: 0,
+					color: {
+					  r: 0.2666666805744171,
+					  g: 0.2666666805744171,
+					  b: 0.2666666805744171,
+					  a: 0,
+					},
+				  },
+				  {
+					position: 0.7135416865348816,
+					color: {
+					  r: 0.2666666805744171,
+					  g: 0.2666666805744171,
+					  b: 0.2666666805744171,
+					  a: 1,
+					},
+				  },
+				],
+			  },
+			shadowBorderLeft: [{ "type": "inner-shadow", "color": { "r": 75 / 255, "g": 75 / 255, "b": 75 / 255, "a": 1 }, "offset": { "x": 1, "y": 0 }, "spread": 0, "visible": true, "blendMode": "normal", "showShadowBehindNode": false, "blur": 0 }],
+			shadowBorderBottom: [{ "type": "inner-shadow", "color": { "r": 75 / 255, "g": 75 / 255, "b": 75 / 255, "a": 1 }, "offset": { "x": 0, "y": -1 }, "spread": 0, "visible": true, "blendMode": "normal", "showShadowBehindNode": false, "blur": 0 }]
+		}
+	}
+
 
 	let cols = putEntriesIntoArray(tableCols).length === 0 ? ['1', '2', '3'] : putEntriesIntoArray(tableCols)
 	let rows = putEntriesIntoArray(tableRows).length === 0 ? ['1', '2', '3'] : putEntriesIntoArray(tableRows)
-
-	// console.log(numToIndices(8))
 
 
 	// useEffect(() => {
@@ -315,42 +424,6 @@ function Main() {
 	// 	}))
 	// })
 
-	// useEffect(() => {
-	// 	waitForTask(new Promise(resolve => {
-	// 		tableMap.get('A1')
-	// 		resolve()
-	// 	}))
-	// })
-
-
-
-
-	// function editColumn(table, cell, rowIndex, colIndex) {
-	// 	return new Promise((resolve) => {
-	// 		// setStrokeWeight(2)
-	// 		console.log(rowIndex, colIndex)
-	// 		figma.showUI(`
-	// 			<div>test</div>
-	// 		`);
-	// 		figma.ui.onmessage = (message) => {
-	// 			table[rowIndex][colIndex] = message
-	// 			updateTable(table, () => {
-	// 				return table
-	// 			})
-	// 			// setStrokeWeight(0)
-	// 			// figma.notify(message);
-	// 			// figma.notify(strokeWeight.toString())
-	// 			// resolve()
-	// 		}
-	// 	})
-	// }
-
-
-	// setWidgetState({
-	//   selected: false
-	// })
-
-	let [sortDescending, setSort] = useSyncedState("sortDescending", false)
 
 	function setWidth(col) {
 		var base = 96
@@ -463,7 +536,6 @@ function Main() {
 
 		let {data, active} = tableCells.get(id) || { data: '', active: false }
 		let [colId, rowId] = id.split(':')
-		let previousCellId = id
 		let currentCellId = id;
 
 		// Gets the colour of first cell first clicked (not previous)
@@ -471,6 +543,15 @@ function Main() {
 
 
 		const onmessage = (message) => {
+			// if (message.type === "window-loaded") {
+			// 	if (widgetSettings?.showCellsBeingEdited) {
+
+			// 		// tableCells.set(id, { data, active: figma.currentUser.color })
+
+			// 		// When plugin window is opened add active colour to cell
+			// 		addActiveCell(id)
+			// 	}
+			// }
 			if (message.type === "next-cell") {
 
 				({ data, colIndex, rowIndex } = message.data)
@@ -480,8 +561,9 @@ function Main() {
 
 				if (widgetSettings?.showCellsBeingEdited) {
 					// Reset current cell color before moving onto next
-					let liveData = tableCells.get(currentCellId).data
-					tableCells.set(currentCellId, { data: liveData, active: previousCellColor })
+					// let liveData = tableCells.get(currentCellId).data
+					// tableCells.set(currentCellId, { data: liveData, active: previousCellColor })
+					removeActiveCell(currentCellId)
 				}
 
 				if (message.target) {
@@ -521,9 +603,12 @@ function Main() {
 
 					if (widgetSettings?.showCellsBeingEdited) {
 						// Store the cell colour
-						previousCellColor = nextCell.active
-						// Set border on the next cell
-						tableCells.set(currentCellId, { data: nextCell.data, active: figma.currentUser.color })
+						// previousCellColor = nextCell.active
+
+						// tableCells.set(currentCellId, { data: nextCell.data, active: figma.currentUser.color })
+
+						// Add color to next cell
+						addActiveCell(currentCellId)
 					}
 
 					figma.ui.postMessage({ type: "post-data", data: {data: nextCell.data, rowIndex, colIndex} })
@@ -540,12 +625,10 @@ function Main() {
 					data = Number(message.data.data)
 				}
 
+				tableCells.set(currentCellId, { data, active })
 
 				if (widgetSettings?.showCellsBeingEdited) {
-					tableCells.set(currentCellId, { data, active: figma.currentUser.color })
-				}
-				else {
-					tableCells.set(currentCellId, { data, active })
+					addActiveCell(currentCellId)
 				}
 
 				// figma.commitUndo();
@@ -567,13 +650,24 @@ function Main() {
 					settings = settings || { navigateOnEnter: false }
 
 					if (widgetSettings?.showCellsBeingEdited) {
-						// Set colour of cell to be active
-						tableCells.set(id, { data, active: figma.currentUser.color })
+
+						// tableCells.set(id, { data, active: figma.currentUser.color })
+
+						// When plugin window is opened add active colour to cell
+						addActiveCell(id)
 					}
 
 					figma.showUI(`<style>${__uiFiles__["css"]}</style>${__uiFiles__["editCell"]}`, { width: 300, height: cellHeight(31), themeColors: true });
 					figma.ui.postMessage({ type: "show-ui", settings })
 					figma.ui.postMessage({ type: "post-data", data: {data, rowIndex, colIndex } })
+
+					// if (widgetSettings?.showCellsBeingEdited) {
+
+					// 	// tableCells.set(id, { data, active: figma.currentUser.color })
+
+					// 	// When plugin window is opened add active colour to cell
+					// 	addActiveCell(id)
+					// }
 
 				})
 
@@ -581,402 +675,13 @@ function Main() {
 
 				if (widgetSettings?.showCellsBeingEdited) {
 					figma.on('close', () => {
-					// Reset active state
-						let temp_active = tableCells.get(currentCellId).active
-						let liveData = tableCells.get(currentCellId).data
-						// // if (previousCellColor) {
-
-						// // } else {
-							previousCellColor = temp_active === figma.currentUser.color ? previousCellColor : false
-						// }
-
-
-						tableCells.set(currentCellId, { data: liveData, active: previousCellColor })
+						removeActiveCell(currentCellId)
 					})
 				}
 
 
 		})
 
-	}
-
-	function Cell({ children, id, cell, rowIndex, colIndex, col }) {
-
-		var width = setWidth(col)
-
-
-		var strokePaint = false;
-
-		var strokeWidth = 0
-		if (tableCells.get(id)) {
-			strokeWidth = tableCells.get(id).active ? 2 : 0
-		}
-
-		if (tableCells.get(id)) {
-			strokePaint = tableCells.get(id).active ? tableCells.get(id).active : false
-		}
-
-
-
-		return (
-			<AutoLayout width={width}
-				height="fill-parent"
-				name="DefaultCell"
-				x={46}
-				blendMode="pass-through"
-				fill={{ "type": "solid", "visible": true, "opacity": 1, "blendMode": "normal", "color": { "r": 1, "g": 1, "b": 1, "a": 1 } }}
-				cornerRadius={{ "topLeft": 0, "topRight": 0, "bottomLeft": 0, "bottomRight": 0 }}
-				padding={{ "top": 0, "right": 0, "bottom": 0, "left": 0 }}
-				overflow="visible"
-				onClick={(event) => editCell(id, colIndex, rowIndex, cols, rows, event)}
-			>
-				<Frame width={1}
-					height="fill-parent"
-					name="Border"
-					blendMode="pass-through"
-					cornerRadius={{ "topLeft": 0, "topRight": 0, "bottomLeft": 0, "bottomRight": 0 }}
-					overflow="visible">
-					<Frame width={1}
-						height={200}
-						name="Border"
-						blendMode="pass-through"
-						fill={{ "type": "solid", "visible": true, "opacity": 1, "blendMode": "normal", "color": { "r": 0.8980392217636108, "g": 0.8980392217636108, "b": 0.8980392217636108, "a": 1 } }}
-						cornerRadius={{ "topLeft": 0, "topRight": 0, "bottomLeft": 0, "bottomRight": 0 }}
-						overflow="hidden">
-					</Frame>
-				</Frame>
-				<AutoLayout width="fill-parent"
-					height="hug-contents"
-					name="Content"
-					x={1}
-					blendMode="pass-through"
-					padding={{ "top": 14, "right": 14, "bottom": 14, "left": 13 }}
-					spacing={10}
-					stroke={strokePaint}
-					strokeWidth={strokeWidth}
-					overflow="visible">
-					<Text key={id} width="fill-parent"
-						name="Text"
-						x={13}
-						y={14}
-						blendMode="pass-through"
-						fill={{ "type": "solid", "visible": true, "opacity": 1, "blendMode": "normal", "color": { "r": 0, "g": 0, "b": 0, "a": 1 } }}
-						fontFamily="Inter"
-						fontWeight="regular"
-						verticalAlignText="center">
-						{cell.data}
-					</Text>
-				</AutoLayout>
-			</AutoLayout>
-		)
-	}
-
-	function HeaderCell({ children, rowIndex, colIndex, id, cell, col }) {
-
-		var strokePaint = false;
-		var strokeWidth = 0
-
-		var width = setWidth(col)
-
-		if (tableCells.get(id)) {
-			strokeWidth = tableCells.get(id).active ? 2 : 0
-		}
-
-		if (tableCells.get(id)) {
-			strokePaint = tableCells.get(id).active ? tableCells.get(id).active : false
-		}
-
-		let [colId, rowId] = id.split(':')
-		return (
-			<AutoLayout width={width}
-				height="fill-parent"
-				name="HeaderCell"
-				x={46}
-				blendMode="pass-through"
-				fill={{ "type": "solid", "visible": true, "opacity": 1, "blendMode": "normal", "color": { "r": 0.9624999761581421, "g": 0.9624999761581421, "b": 0.9624999761581421, "a": 1 } }}
-				cornerRadius={{ "topLeft": 0, "topRight": 0, "bottomLeft": 0, "bottomRight": 0 }}
-				padding={{ "top": 0, "right": 0, "bottom": 0, "left": 0 }}
-				overflow="visible"
-				onClick={() => editCell(id, colIndex, rowIndex, cols, rows)}
-			>
-				<Frame width={1}
-					height="fill-parent"
-					name="Border"
-					blendMode="pass-through"
-					cornerRadius={{ "topLeft": 0, "topRight": 0, "bottomLeft": 0, "bottomRight": 0 }}
-					overflow="visible">
-					<Frame width={1}
-						height={200}
-						name="Border"
-						blendMode="pass-through"
-						fill={{ "type": "solid", "visible": true, "opacity": 1, "blendMode": "normal", "color": { "r": 0.8980392217636108, "g": 0.8980392217636108, "b": 0.8980392217636108, "a": 1 } }}
-						cornerRadius={{ "topLeft": 0, "topRight": 0, "bottomLeft": 0, "bottomRight": 0 }}
-						overflow="hidden">
-					</Frame>
-				</Frame>
-				<AutoLayout width="fill-parent"
-					name="Content"
-					x={1}
-					blendMode="pass-through"
-					padding={{ "top": 14, "right": 14, "bottom": 14, "left": 13 }}
-					spacing={10}
-					stroke={strokePaint}
-					strokeWidth={strokeWidth}
-					overflow="visible">
-					<Text width="fill-parent"
-						name="Text"
-						x={13}
-						y={14}
-						blendMode="pass-through"
-						fill={{ "type": "solid", "visible": true, "opacity": 1, "blendMode": "normal", "color": { "r": 0, "g": 0, "b": 0, "a": 1 } }}
-						fontFamily="Inter"
-						fontWeight="semi-bold"
-						verticalAlignText="center">
-						{cell.data}
-					</Text>
-				</AutoLayout>
-			</AutoLayout>
-
-
-		)
-
-	}
-
-	function ColumnLetter({ children, rowIndex, colIndex, id, col }) {
-		let [colId, rowId] = id.split(":")
-
-		var width = setWidth(col)
-
-		return (
-			<AutoLayout width={width}
-				name="ColumnLetter"
-				x={46}
-				blendMode="pass-through"
-				fill={{ "type": "solid", "visible": true, "opacity": 1, "blendMode": "normal", "color": { "r": 0.9624999761581421, "g": 0.9624999761581421, "b": 0.9624999761581421, "a": 1 } }}
-				cornerRadius={{ "topLeft": 0, "topRight": 0, "bottomLeft": 0, "bottomRight": 0 }}
-				padding={{ "top": 8, "right": 6, "bottom": 8, "left": 4 }}
-				spacing={4}
-				effect={[{ "type": "inner-shadow", "color": { "r": 0.8980392217636108, "g": 0.8980392217636108, "b": 0.8980392217636108, "a": 1 }, "offset": { "x": 1, "y": 0 }, "spread": 0, "visible": true, "blendMode": "normal", "showShadowBehindNode": false, "blur": 0 }]}
-				overflow="hidden"
-				onClick={(event) => {
-					return new Promise((resolve) => {
-						// setStrokeWeight(2)
-
-						figma.showUI(`
-						<style>${__uiFiles__["css"]}</style>
-						<div id="actions" class="m-xsmall type--small">
-							<p>Column ${alphabet[colIndex]}</p>
-							<button class="button button--secondary mt-xsmall" style="width: 100%" id="insertToLeft">Insert to Left</button>
-							<br/>
-							<button class="button button--secondary mb-xsmall" style="width: 100%" href="#" id="insertToRight">Insert to Right</button>
-							<hr/>
-							<button class="button button--secondary mt-xsmall" style="width: 100%" href="#" id="sortAscending">Sort Table A-Z</button>
-							<br/>
-							<button class="button button--secondary mb-xsmall" style="width: 100%" href="#" id="sortDescending">Sort Table Z-A</button>
-							<hr/>
-							<div class="button-group size-${col.size}">
-							<button class="button button--fourth mb-xsmall small" href="#" id="resizeSmall">S</button>
-							<button class="button button--fourth mb-xsmall medium" href="#" id="resizeMedium">M</button>
-							<button class="button button--fourth mb-xsmall large" href="#" id="resizeLarge">L</button>
-							</div>
-							<hr/>
-							<button class="button button--secondary mt-xsmall" style="width: 100%" href="#" id="deleteColumn">Delete Column</button>
-						</div>
-				<script>
-				const actions = document.getElementById("actions");
-				const insertToLeft = document.getElementById("insertToLeft");
-				const insertToRight = document.getElementById("insertToRight");
-				const deleteColumn = document.getElementById("deleteColumn");
-				const sortAscending = document.getElementById("sortAscending");
-				const sortDescending = document.getElementById("sortDescending");
-
-				deleteColumn.addEventListener("click", () => {
-					parent.postMessage({ pluginMessage: {type: 'delete-column', rowIndex: ${rowIndex}, colIndex: ${colIndex}} }, '*');
-				})
-				insertToRight.addEventListener("click", () => {
-					parent.postMessage({ pluginMessage: {type: 'insert-to-right'} }, '*');
-				})
-				insertToLeft.addEventListener("click", () => {
-					parent.postMessage({ pluginMessage: {type: 'insert-to-left'} }, '*');
-				})
-				sortAscending.addEventListener("click", () => {
-					parent.postMessage({ pluginMessage: {type: 'sort-ascending'} }, '*');
-				})
-				sortDescending.addEventListener("click", () => {
-					parent.postMessage({ pluginMessage: {type: 'sort-descending'} }, '*');
-				})
-				resizeSmall.addEventListener("click", () => {
-					parent.postMessage({ pluginMessage: {type: 'resize-column', size: 'small'} }, '*');
-				})
-				resizeMedium.addEventListener("click", () => {
-					parent.postMessage({ pluginMessage: {type: 'resize-column', size: 'medium'} }, '*');
-				})
-				resizeLarge.addEventListener("click", () => {
-					parent.postMessage({ pluginMessage: {type: 'resize-column', size: 'large'} }, '*');
-				})
-				</script>
-			`, { width: 200, height: 386, themeColors: true });
-			// position: {x: event.canvasX - 130, y: event.canvasY + 20}
-						figma.ui.onmessage = (message) => {
-
-							if (message.type === 'delete-column') {
-								removeColumn(colId)
-							}
-
-							if (message.type === 'insert-to-right') {
-								addColumn(colIndex)
-							}
-
-							if (message.type === 'insert-to-left') {
-								addColumn(colIndex, 0)
-							}
-
-							if (message.type === 'sort-ascending') {
-								sortTable(colId, rows)
-							}
-
-							if (message.type === 'sort-descending') {
-								sortTable(colId, rows, true)
-							}
-
-							if (message.type === 'resize-column') {
-								resizeColumn(colId, message.size)
-							}
-							// table[rowIndex][colIndex] = message
-							// updateTable(table, () => {
-							// 	return table
-							// })
-							// setStrokeWeight(0)
-							// figma.notify(message);
-							// figma.notify(strokeWeight.toString())
-							resolve()
-						}
-					})
-				 }}>
-				<Text width="fill-parent"
-					name="Banana"
-					x={4}
-					y={4}
-					blendMode="pass-through"
-					fill={{ "type": "solid", "visible": true, "opacity": 0.30000001192092896, "blendMode": "normal", "color": { "r": 0, "g": 0, "b": 0 } }}
-					fontSize={12}
-					fontFamily="Inter"
-					fontWeight="bold"
-					horizontalAlignText="center">
-					{alphabet[colIndex]}
-				</Text>
-			</AutoLayout>
-		)
-	}
-
-	function RowNumber({ children, rowIndex, colIndex, id }) {
-
-		let [colId, rowId] = id.split(":")
-		return (
-			<AutoLayout width={46}
-				height="fill-parent"
-				name="RowNumber"
-				blendMode="pass-through"
-				fill={{ "type": "solid", "visible": true, "opacity": 1, "blendMode": "normal", "color": { "r": 0.9624999761581421, "g": 0.9624999761581421, "b": 0.9624999761581421, "a": 1 } }}
-				cornerRadius={{ "topLeft": 0, "topRight": 0, "bottomLeft": 0, "bottomRight": 0 }}
-				padding={{ "top": 4, "right": 4, "bottom": 4, "left": 4 }}
-				effect={[{ "type": "drop-shadow", "color": { "r": 0.8980392217636108, "g": 0.8980392217636108, "b": 0.8980392217636108, "a": 1 }, "offset": { "x": -1, "y": 0 }, "spread": 0, "visible": true, "blendMode": "normal", "showShadowBehindNode": false, "blur": 0 }]}
-				verticalAlignItems="center"
-				overflow="hidden"
-				onClick={() => {
-					console.log(id)
-					return new Promise((resolve) => {
-						figma.showUI(`
-						<style>${__uiFiles__["css"]}</style>
-						<div id="actions" class="m-xsmall type--small">
-							<p>Row ${rowIndex}</p>
-							<button class="button button--secondary" style="width: 100%" id="insertAbove">Insert Above</button>
-							<br/>
-							<button class="button button--secondary mb-xsmall" style="width: 100%" id="insertBelow">Insert Below</button>
-							<hr/>
-							<button class="button button--secondary mt-xsmall" style="width: 100%" id="deleteRow">Delete Row</button>
-						</div>
-				<script>
-				const actions = document.getElementById("actions");
-				const insertAbove = document.getElementById("insertAbove");
-				const insertBelow = document.getElementById("insertBelow");
-				const deleteRow = document.getElementById("deleteRow");
-
-				deleteRow.addEventListener("click", () => {
-					parent.postMessage({ pluginMessage: {type: 'delete-row'} }, '*');
-				})
-				insertAbove.addEventListener("click", () => {
-					parent.postMessage({ pluginMessage: {type: 'insert-above'} }, '*');
-				})
-				insertBelow.addEventListener("click", () => {
-					parent.postMessage({ pluginMessage: {type: 'insert-below'} }, '*');
-				})
-				</script>
-			`, { width: 200, height: 208, themeColors: true});
-						figma.ui.onmessage = (message) => {
-
-							if (message.type === 'delete-row') {
-								removeRow(rowId)
-							}
-
-							if (message.type === 'insert-above') {
-								addRow(rowIndex, 0)
-							}
-
-							if (message.type === 'insert-below') {
-								addRow(rowIndex, 1)
-							}
-
-							resolve()
-						}
-					})
-				}}
-			>
-				<Text width="fill-parent"
-					name="Text"
-					x={4}
-					y={16}
-					blendMode="pass-through"
-					fill={{ "type": "solid", "visible": true, "opacity": 0.30000001192092896, "blendMode": "normal", "color": { "r": 0, "g": 0, "b": 0} }}
-					fontSize={12}
-					fontFamily="Inter"
-					fontWeight="bold"
-					horizontalAlignText="center"
-					verticalAlignText="center">
-					{rowIndex}
-				</Text>
-			</AutoLayout>
-		)
-	}
-
-	function EmptyRowNumber({ children }) {
-		return (
-			<AutoLayout width={46}
-				height="fill-parent"
-				name="RowNumber"
-				blendMode="pass-through"
-				fill={{ "type": "solid", "visible": true, "opacity": 1, "blendMode": "normal", "color": { "r": 0.9624999761581421, "g": 0.9624999761581421, "b": 0.9624999761581421, "a": 1 } }}
-				cornerRadius={{ "topLeft": 0, "topRight": 0, "bottomLeft": 0, "bottomRight": 0 }}
-				padding={{ "top": 4, "right": 4, "bottom": 4, "left": 4 }}
-				effect={[{ "type": "drop-shadow", "color": { "r": 0.8980392217636108, "g": 0.8980392217636108, "b": 0.8980392217636108, "a": 1 }, "offset": { "x": -1, "y": 0 }, "spread": 0, "visible": true, "blendMode": "normal", "showShadowBehindNode": false, "blur": 0 }]}
-				verticalAlignItems="center"
-				overflow="hidden"
-			>
-				<Text width="fill-parent"
-					name="Text"
-					x={4}
-					y={16}
-					blendMode="pass-through"
-					fill={{ "type": "solid", "visible": true, "opacity": 0.30000001192092896, "blendMode": "normal", "color": { "r": 0, "g": 0, "b": 0 } }}
-					fontSize={12}
-					fontFamily="Inter"
-					fontWeight="bold"
-					horizontalAlignText="center"
-					verticalAlignText="center">
-					{children}
-				</Text>
-			</AutoLayout>
-		)
 	}
 
 	// function sortColumn(table, colIndex) {
@@ -1036,7 +741,6 @@ function Main() {
 			var setData = tableCells.get(cellId) || { data: '', active: false };
 
 			setData.data = convertToNumber(setData.data)
-			console.log(setData.data)
 
 			colEntries.push([cellId, setData])
 
@@ -1302,6 +1006,12 @@ function Main() {
 							}
 							if (message.type === "widget-settings-saved") {
 								setWidgetSettings(message.settings)
+
+								if (message.settings?.showCellsBeingEdited === false) {
+									activeCells.entries().map((entry) => {
+										activeCells.delete(entry[0])
+									})
+								}
 							}
 							if (message.type === "clear-table") {
 								tableCells.entries().map((entry) => {
@@ -1455,42 +1165,586 @@ function Main() {
 		},
 	)
 
+	function Title() {
+		return (
+		  <AutoLayout
+			name="Title"
+			fill={theme.colorBgSecondary}
+			padding={{
+			  top: 8,
+			  right: 0,
+			  bottom: 0,
+			  left: 0,
+			}}
+			width="fill-parent"
+			horizontalAlignItems="center"
+      verticalAlignItems="center"
+		  >
+			<Input
+
+			  value={widgetName}
+				placeholder="Title"
+				onTextEditEnd={(e) => {
+
+						setWidgetName(e.characters);
+
+
+				}}
+				fontSize={12}
+				horizontalAlignText="center"
+				fill={theme.colorTextTertiary}
+				fontWeight={600}
+				lineHeight={20}
+				// inputFrameProps={{
+				// }}
+				width={260}
+				// inputBehavior="wrap"
+/>
+		  </AutoLayout>
+		);
+	  }
+
+	function Cell({ children, id, cell, rowIndex, colIndex, col, cornerRadius }) {
+
+		var width = setWidth(col)
+
+
+		var strokePaint = false;
+
+		var strokeWidth = 0
+
+		let activeCell = activeCells.get(id)
+
+		if (activeCell) {
+			strokeWidth = activeCell.users[0] ? 2 : 0
+			strokePaint = activeCell.users[0] ? activeCell.users[0].color : false
+		}
+
+		return (
+			<AutoLayout width={width}
+
+				height="fill-parent"
+				name="DefaultCell"
+				x={46}
+				blendMode="pass-through"
+				fill={theme.colorBg}
+
+				padding={{ "top": 0, "right": 0, "bottom": 0, "left": 0 }}
+				overflow="visible"
+				onClick={(event) => editCell(id, colIndex, rowIndex, cols, rows, event)}
+			>
+				<Frame width={1}
+					height="fill-parent"
+					name="Border"
+					blendMode="pass-through"
+					cornerRadius={{ "topLeft": 0, "topRight": 0, "bottomLeft": 0, "bottomRight": 0 }}
+					overflow="visible"
+					fill={theme.colorBorder}>
+				</Frame>
+				<AutoLayout width="fill-parent"
+					height="hug-contents"
+					name="Content"
+					x={1}
+					blendMode="pass-through"
+					padding={{ "top": 14, "right": 14, "bottom": 14, "left": 13 }}
+					spacing={10}
+					overflow="visible">
+					<Text key={id} width="fill-parent"
+						name="Text"
+						x={13}
+						y={14}
+						blendMode="pass-through"
+						fill={theme.colorText}
+						fontFamily="Inter"
+						fontWeight="regular"
+						verticalAlignText="center">
+						{cell.data}
+					</Text>
+				</AutoLayout>
+				<Rectangle
+					stroke={strokePaint}
+					strokeWidth={strokeWidth}
+					cornerRadius={cornerRadius}
+					positioning="absolute"
+					x={{
+						type: "left-right",
+						leftOffset: 1,
+						rightOffset: 0,
+					  }}
+					  y={{
+						type: "top-bottom",
+						topOffset: 0,
+						bottomOffset: 0,
+					  }}></Rectangle>
+			</AutoLayout>
+		)
+	}
+
+	function HeaderCell({ children, rowIndex, colIndex, id, cell, col }) {
+
+		var strokePaint = false;
+		var strokeWidth = 0
+
+		var width = setWidth(col)
+
+		let activeCell = activeCells.get(id)
+
+		if (activeCell) {
+			strokeWidth = activeCell.users[0] ? 2 : 0
+			strokePaint = activeCell.users[0] ? activeCell.users[0].color : false
+		}
+
+		let [colId, rowId] = id.split(':')
+		return (
+			<AutoLayout width={width}
+				height="fill-parent"
+				name="HeaderCell"
+				x={46}
+				blendMode="pass-through"
+				fill={theme.colorBgHeaderCell}
+				cornerRadius={{ "topLeft": 0, "topRight": 0, "bottomLeft": 0, "bottomRight": 0 }}
+				padding={{ "top": 0, "right": 0, "bottom": 0, "left": 0 }}
+				overflow="visible"
+				onClick={() => editCell(id, colIndex, rowIndex, cols, rows)}
+			>
+				<Frame width={1}
+					height="fill-parent"
+					name="Border"
+					blendMode="pass-through"
+					cornerRadius={{ "topLeft": 0, "topRight": 0, "bottomLeft": 0, "bottomRight": 0 }}
+					overflow="visible">
+					<Frame width={1}
+						height={200}
+						name="Border"
+						blendMode="pass-through"
+						fill={theme.colorBorder}
+						cornerRadius={{ "topLeft": 0, "topRight": 0, "bottomLeft": 0, "bottomRight": 0 }}
+						overflow="hidden">
+					</Frame>
+				</Frame>
+				<AutoLayout width="fill-parent"
+					name="Content"
+					x={1}
+					blendMode="pass-through"
+					padding={{ "top": 14, "right": 14, "bottom": 14, "left": 13 }}
+					spacing={10}
+					stroke={strokePaint}
+					strokeWidth={strokeWidth}
+					overflow="visible">
+					<Text width="fill-parent"
+						name="Text"
+						x={13}
+						y={14}
+						blendMode="pass-through"
+						fill={theme.colorText}
+						fontFamily="Inter"
+						fontWeight="semi-bold"
+						verticalAlignText="center">
+						{cell.data}
+					</Text>
+				</AutoLayout>
+			</AutoLayout>
+
+
+		)
+
+	}
+
+	function ColumnLetter({ children, rowIndex, colIndex, id, col }) {
+		let [colId, rowId] = id.split(":")
+
+		var width = setWidth(col)
+
+		return (
+			<AutoLayout width={width}
+				name="ColumnLetter"
+				x={46}
+				blendMode="pass-through"
+				fill={theme.colorBgSecondary}
+				cornerRadius={{ "topLeft": 0, "topRight": 0, "bottomLeft": 0, "bottomRight": 0 }}
+
+				spacing={4}
+				overflow="hidden"
+				onClick={(event) => {
+					return new Promise((resolve) => {
+						// setStrokeWeight(2)
+
+						figma.showUI(`
+						<style>${__uiFiles__["css"]}</style>
+						<div id="actions" class="m-xsmall type--small">
+							<p>Column ${alphabet[colIndex]}</p>
+							<button class="button button--secondary mt-xsmall" style="width: 100%" id="insertToLeft">Insert to Left</button>
+							<br/>
+							<button class="button button--secondary mb-xsmall" style="width: 100%" href="#" id="insertToRight">Insert to Right</button>
+							<hr/>
+							<button class="button button--secondary mt-xsmall" style="width: 100%" href="#" id="sortAscending">Sort Table A-Z</button>
+							<br/>
+							<button class="button button--secondary mb-xsmall" style="width: 100%" href="#" id="sortDescending">Sort Table Z-A</button>
+							<hr/>
+							<div class="button-group size-${col.size}">
+							<button class="button button--fourth mb-xsmall small" href="#" id="resizeSmall">S</button>
+							<button class="button button--fourth mb-xsmall medium" href="#" id="resizeMedium">M</button>
+							<button class="button button--fourth mb-xsmall large" href="#" id="resizeLarge">L</button>
+							</div>
+							<hr/>
+							<button class="button button--secondary mt-xsmall" style="width: 100%" href="#" id="deleteColumn">Delete Column</button>
+						</div>
+				<script>
+				const actions = document.getElementById("actions");
+				const insertToLeft = document.getElementById("insertToLeft");
+				const insertToRight = document.getElementById("insertToRight");
+				const deleteColumn = document.getElementById("deleteColumn");
+				const sortAscending = document.getElementById("sortAscending");
+				const sortDescending = document.getElementById("sortDescending");
+
+				deleteColumn.addEventListener("click", () => {
+					parent.postMessage({ pluginMessage: {type: 'delete-column', rowIndex: ${rowIndex}, colIndex: ${colIndex}} }, '*');
+				})
+				insertToRight.addEventListener("click", () => {
+					parent.postMessage({ pluginMessage: {type: 'insert-to-right'} }, '*');
+				})
+				insertToLeft.addEventListener("click", () => {
+					parent.postMessage({ pluginMessage: {type: 'insert-to-left'} }, '*');
+				})
+				sortAscending.addEventListener("click", () => {
+					parent.postMessage({ pluginMessage: {type: 'sort-ascending'} }, '*');
+				})
+				sortDescending.addEventListener("click", () => {
+					parent.postMessage({ pluginMessage: {type: 'sort-descending'} }, '*');
+				})
+				resizeSmall.addEventListener("click", () => {
+					parent.postMessage({ pluginMessage: {type: 'resize-column', size: 'small'} }, '*');
+				})
+				resizeMedium.addEventListener("click", () => {
+					parent.postMessage({ pluginMessage: {type: 'resize-column', size: 'medium'} }, '*');
+				})
+				resizeLarge.addEventListener("click", () => {
+					parent.postMessage({ pluginMessage: {type: 'resize-column', size: 'large'} }, '*');
+				})
+				</script>
+			`, { width: 200, height: 386, themeColors: true });
+			// position: {x: event.canvasX - 130, y: event.canvasY + 20}
+						figma.ui.onmessage = (message) => {
+
+							if (message.type === 'delete-column') {
+								removeColumn(colId)
+							}
+
+							if (message.type === 'insert-to-right') {
+								addColumn(colIndex)
+							}
+
+							if (message.type === 'insert-to-left') {
+								addColumn(colIndex, 0)
+							}
+
+							if (message.type === 'sort-ascending') {
+								sortTable(colId, rows)
+							}
+
+							if (message.type === 'sort-descending') {
+								sortTable(colId, rows, true)
+							}
+
+							if (message.type === 'resize-column') {
+								resizeColumn(colId, message.size)
+							}
+							// table[rowIndex][colIndex] = message
+							// updateTable(table, () => {
+							// 	return table
+							// })
+							// setStrokeWeight(0)
+							// figma.notify(message);
+							// figma.notify(strokeWeight.toString())
+							resolve()
+						}
+					})
+				 }}>
+					 <Frame width={1}
+
+					height="fill-parent"
+					name="Border"
+					cornerRadius={{ "topLeft": 0, "topRight": 0, "bottomLeft": 0, "bottomRight": 0 }}
+					overflow="visible"
+					fill={theme.colorBorderGradient}></Frame>
+
+				 <AutoLayout
+				 width="fill-parent"
+				 padding={{ "top": 8, "right": 6, "bottom": 8, "left": 4 }}
+				 >
+					 <Text width="fill-parent"
+					name="Column Letter"
+
+					x={4}
+					y={4}
+					blendMode="pass-through"
+					fill={theme.colorTextTertiary}
+					fontSize={12}
+					fontFamily="Inter"
+					fontWeight="bold"
+					horizontalAlignText="center">
+					{alphabet[colIndex]}
+				</Text>
+				 </AutoLayout>
+
+			</AutoLayout>
+		)
+	}
+
+	function RowNumber({ children, rowIndex, colIndex, id }) {
+
+		let [colId, rowId] = id.split(":")
+		return (
+			<AutoLayout width={46}
+				height="fill-parent"
+				name="RowNumber"
+				blendMode="pass-through"
+				fill={theme.colorBgSecondary}
+				cornerRadius={{ "topLeft": 0, "topRight": 0, "bottomLeft": 0, "bottomRight": 0 }}
+				padding={{ "top": 4, "right": 4, "bottom": 4, "left": 4 }}
+				verticalAlignItems="center"
+				overflow="hidden"
+				onClick={() => {
+					console.log(id)
+					return new Promise((resolve) => {
+						figma.showUI(`
+						<style>${__uiFiles__["css"]}</style>
+						<div id="actions" class="m-xsmall type--small">
+							<p>Row ${rowIndex}</p>
+							<button class="button button--secondary" style="width: 100%" id="insertAbove">Insert Above</button>
+							<br/>
+							<button class="button button--secondary mb-xsmall" style="width: 100%" id="insertBelow">Insert Below</button>
+							<hr/>
+							<button class="button button--secondary mt-xsmall" style="width: 100%" id="deleteRow">Delete Row</button>
+						</div>
+				<script>
+				const actions = document.getElementById("actions");
+				const insertAbove = document.getElementById("insertAbove");
+				const insertBelow = document.getElementById("insertBelow");
+				const deleteRow = document.getElementById("deleteRow");
+
+				deleteRow.addEventListener("click", () => {
+					parent.postMessage({ pluginMessage: {type: 'delete-row'} }, '*');
+				})
+				insertAbove.addEventListener("click", () => {
+					parent.postMessage({ pluginMessage: {type: 'insert-above'} }, '*');
+				})
+				insertBelow.addEventListener("click", () => {
+					parent.postMessage({ pluginMessage: {type: 'insert-below'} }, '*');
+				})
+				</script>
+			`, { width: 200, height: 208, themeColors: true});
+						figma.ui.onmessage = (message) => {
+
+							if (message.type === 'delete-row') {
+								removeRow(rowId)
+							}
+
+							if (message.type === 'insert-above') {
+								addRow(rowIndex, 0)
+							}
+
+							if (message.type === 'insert-below') {
+								addRow(rowIndex, 1)
+							}
+
+							resolve()
+						}
+					})
+				}}
+			>
+				<Text width="fill-parent"
+					name="Text"
+					x={4}
+					y={16}
+					blendMode="pass-through"
+					fill={theme.colorTextTertiary}
+					fontSize={12}
+					fontFamily="Inter"
+					fontWeight="bold"
+					horizontalAlignText="center"
+					verticalAlignText="center">
+					{rowIndex}
+				</Text>
+			</AutoLayout>
+		)
+	}
+
+	function EmptyRowNumber({ children }) {
+		return (
+			<AutoLayout width={46}
+				height="fill-parent"
+				name="RowNumber"
+				blendMode="pass-through"
+				fill={theme.colorBgSecondary}
+				cornerRadius={{ "topLeft": 0, "topRight": 0, "bottomLeft": 0, "bottomRight": 0 }}
+				padding={{ "top": 4, "right": 4, "bottom": 4, "left": 4 }}
+				verticalAlignItems="center"
+				overflow="hidden"
+			>
+				<Text width="fill-parent"
+					name="Text"
+					x={4}
+					y={16}
+					blendMode="pass-through"
+					fill={theme.colorText}
+					fontSize={12}
+					fontFamily="Inter"
+					fontWeight="bold"
+					horizontalAlignText="center"
+					verticalAlignText="center">
+					{children}
+				</Text>
+			</AutoLayout>
+		)
+	}
+
+	function Row({children, rowIndex, lastRow}) {
+		let effect = theme.shadowBorderBottom
+		let padding = { "top": 0, "right": 0, "bottom": 1, "left": 0 }
+		if (lastRow) {
+			effect = false
+			padding = 0
+		}
+		return (
+			<AutoLayout name="Row"
+				y={71}
+				blendMode="pass-through"
+				fill={theme.colorBg}
+				cornerRadius={{ "topLeft": 0, "topRight": 0, "bottomLeft": 0, "bottomRight": 0 }}
+				padding={padding}
+				effect={effect}
+				overflow="hidden">
+				{children}
+			</AutoLayout>
+		)
+
+	}
+
+	function Rows({children}) {
+		return (
+			<AutoLayout name="Rows"
+				y={6}
+				blendMode="pass-through"
+				cornerRadius={{ "topLeft": 0, "topRight": 0, "bottomLeft": 0, "bottomRight": 0 }}
+				padding={{ "top": 0, "right": 0, "bottom": 0, "left": 0 }}
+				direction="vertical"
+				overflow="visible">
+				{children}
+			</AutoLayout>
+		)
+	}
+
+	function TopBorder({color}) {
+
+		var height = 6
+		var fill = { "type": "solid", "visible": true, "opacity": 1, "blendMode": "normal", "color": color }
+
+		if (color === "ukraine") {
+			fill = {
+				type: "gradient-linear",
+				gradientHandlePositions: [
+				  { x: 0.5, y: 0 },
+				  { x: 1, y: 1 },
+				  { x: 0, y: 0 }
+				],
+				gradientStops: [
+				  { position: 0, color: {"r":0,"g":0.4156862795352936,"b":0.8588235378265381,"a":1} },
+				  { position: 0.499, color: {"r":0,"g":0.4156862795352936,"b":0.8588235378265381,"a":1} },
+				  { position: 0.5, color: {"r":0.9921568632125854,"g":0.8313725590705872,"b":0.0117647061124444,"a":1} },
+				  { position: 1, color: {"r":0.9921568632125854,"g":0.8313725590705872,"b":0.0117647061124444,"a":1} }
+				]
+			  }
+		}
+		return (
+			<Frame width="fill-parent"
+				height={height}
+				name="Border"
+				fill={fill}
+				cornerRadius={{ "topLeft": 0, "topRight": 0, "bottomLeft": 0, "bottomRight": 0 }}
+				overflow="hidden">
+			</Frame>
+		)
+	}
+
+	function Table({children}) {
+		return (
+			<AutoLayout name="Table"
+				x={11234}
+				y={1555}
+				blendMode="pass-through"
+				fill={theme.colorBg}
+				effect={{
+					type: "drop-shadow",
+					color: "#0000001A",
+					offset: {
+					  x: 0,
+					  y: 2,
+					},
+					blur: 4,
+				  }}
+				  fill="#FFF"
+				  stroke="#0000000A"
+				  strokeAlign="outside"
+
+				// stroke={{ "type": "solid", "visible": true, "opacity": 0.10000000149011612, "blendMode": "normal", "color": { "r": 0, "g": 0, "b": 0, "a": 0.10000000149011612 } }}
+				// strokeWidth={0.5}
+				cornerRadius={{ "topLeft": 8, "topRight": 8, "bottomLeft": 8, "bottomRight": 8 }}
+				// effect={[{ "type": "drop-shadow", "color": { "r": 0, "g": 0, "b": 0, "a": 0.15000000596046448 }, "offset": { "x": 0, "y": 2 }, "spread": 0, "visible": true, "blendMode": "normal", "showShadowBehindNode": true, "blur": 4 }]}
+				direction="vertical"
+				overflow="hidden">
+				{children}
+			</AutoLayout>
+		)
+	}
+
 	return (
-		<Table key="">
-			<TopBorder key="" color={widgetColor} />
-			<Rows key="">
+		<Table>
+			<TopBorder key="topBorder" color={widgetColor} />
+			<Title></Title>
+			<Rows key="rows">
 				{rows.map((rowId, rowIndex) => {
+					let lastRow = false
+					if (rowIndex === rows.length - 1) {
+							lastRow = true
+					}
+
 					return (
-						<Row key="">
+						<Row key={rowId[0]} lastRow={lastRow}>
 							{cols.map((colId, colIndex) => {
-								var cellId = `${colId}:${rowId}`
-								var cellLocation = `${colId}:${rowId}`
-								// console.log(`${colId}:${rowId}`)
-								var cell = tableCells.get(`${colId}:${rowId}`) || { data: '' }
+								var cellId = `${colId[0]}:${rowId[0]}`
+								var cell = tableCells.get(`${colId[0]}:${rowId[0]}`) || { data: '' }
 
 								var col = tableCols.get(colId[0])
 
-
 								if (colIndex === 0 && rowIndex === 0) {
-									return <EmptyRowNumber key={colIndex} ></EmptyRowNumber>
+									return <EmptyRowNumber key={cellId} ></EmptyRowNumber>
 								}
 								else if (colIndex === 0) {
-									return <RowNumber key={rowIndex}  id={cellId} rowIndex={rowIndex} colIndex={colIndex}>{cell}</RowNumber>
+									return <RowNumber key={cellId}  id={cellId} rowIndex={rowIndex} colIndex={colIndex}>{cell}</RowNumber>
 								}
 								else {
 									if (rowIndex === 0) {
-										return <ColumnLetter key={colIndex} id={cellId} rowIndex={rowIndex} colIndex={colIndex} col={col}>{cell}</ColumnLetter>
+										return <ColumnLetter key={cellId} id={cellId} rowIndex={rowIndex} colIndex={colIndex} col={col}>{cell}</ColumnLetter>
 									}
 									else if (rowIndex === 1) {
 										return <HeaderCell key={cellId} cell={cell} id={cellId} rowIndex={rowIndex} colIndex={colIndex} col={col}></HeaderCell>
 									}
 									else {
-										return <Cell key={cellId} cell={cell} id={cellId} rowIndex={rowIndex} colIndex={colIndex} col={col}></Cell>
+										let cornerRadius : any = 0
+
+										if (colIndex === cols.length - 1 && rowIndex === rows.length -1) {
+											cornerRadius = {
+												bottomRight: 8
+											}
+										}
+										return <Cell key={cellId} cell={cell} id={cellId} rowIndex={rowIndex} colIndex={colIndex} col={col} cornerRadius={cornerRadius}></Cell>
 									}
 
 								}
 							})}
 						</Row>
+
 					)
 				})}
 			</Rows>

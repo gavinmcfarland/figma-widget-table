@@ -2046,14 +2046,21 @@ select.select-menu {
 	display: inline-block;
 }
 
+/* Custom CSS */
+
+body {
+	color: var(--figma-color-text);
+	background-color: var(--figma-color-bg);
+}
+
 hr {
 	border: none;
-	border-top: 1px solid var(--black1);
+	border-top: 1px solid var(--figma-color-bg-tertiary);
 }
 
 key {
 	display: inline-block;
-	background-color: var(--grey);
+	background-color: var(--figma-color-bg-tertiary);
 	border-radius: 2px;
 	padding: 2px 4px;
 	margin-left: 2px;
@@ -2082,7 +2089,7 @@ key {
 
 .button--fourth {
 	background-color: var(--white);
-	border: 1px solid var(--black8);
+	border-width: 1px;
 	color: var(--black8);
 	padding: 0 calc(var(--size-xsmall) + 1px) 0 calc(var(--size-xsmall) + 1px);
 	letter-spacing: var(--font-letter-spacing-pos-small);
@@ -2115,4 +2122,49 @@ key {
 	background-color: #222222;
 	border-color: none;
 	color: white;
+}
+
+.secondary-text {
+	color: var(--figma-color-text-secondary);
+}
+
+.button--primary {
+	background-color: var(--figma-color-bg-brand);
+	color: var(--figma-color-text-onbrand);
+}
+
+.textarea, .input__field, .input__field:placeholder-shown, .button--secondary, .size-medium > * {
+	background-color: transparent;
+	color: var(--figma-color-text);
+	border-color: var(--figma-color-border);
+}
+
+.checkbox__label:before {
+	background-color: transparent;
+	color: var(--figma-color-text);
+	border-color: var(--figma-color-border-strong);
+}
+
+.textarea:hover, .input__field:hover, .input__field:placeholder-shown:hover, .button--fourth:hover {
+	color: var(--figma-color-text);
+	border-color: var(--figma-color-border);
+}
+
+.textarea:focus, .input__field:focus, .input__field:focus:placeholder-shown {
+	color: var(--figma-color-text);
+	border-color: var(--figma-color-bg-brand);
+	outline-color: var(--figma-color-bg-brand);
+}
+
+.checkbox__label {
+	color: var(--figma-color-text);
+}
+
+.checkbox__box:checked + .checkbox__label:before {
+    background-color: var(--figma-color-bg-brand);
+	border-color: var(--figma-color-bg-brand);
+}
+
+.input__field::placeholder { /* Chrome, Firefox, Opera, Safari 10.1+ */
+	color: var(--figma-color-text-secondary);
 }

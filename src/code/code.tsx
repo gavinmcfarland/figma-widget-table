@@ -361,6 +361,7 @@ function Main() {
 				  },
 				],
 			  },
+			colorHover: "#FAFAFA",
 			shadowBorderLeft: [{ "type": "inner-shadow", "color": { "r": 0.8980392217636108, "g": 0.8980392217636108, "b": 0.8980392217636108, "a": 1 }, "offset": { "x": 1, "y": 0 }, "spread": 0, "visible": true, "blendMode": "normal", "showShadowBehindNode": false, "blur": 0 }],
 			shadowBorderBottom: [{ "type": "inner-shadow", "color": { "r": 0.8980392217636108, "g": 0.8980392217636108, "b": 0.8980392217636108, "a": 1 }, "offset": { "x": 0, "y": -1 }, "spread": 0, "visible": true, "blendMode": "normal", "showShadowBehindNode": false, "blur": 0 }]
 		}
@@ -405,6 +406,7 @@ function Main() {
 				  },
 				],
 			  },
+			colorHover: "#313131",
 			shadowBorderLeft: [{ "type": "inner-shadow", "color": { "r": 75 / 255, "g": 75 / 255, "b": 75 / 255, "a": 1 }, "offset": { "x": 1, "y": 0 }, "spread": 0, "visible": true, "blendMode": "normal", "showShadowBehindNode": false, "blur": 0 }],
 			shadowBorderBottom: [{ "type": "inner-shadow", "color": { "r": 75 / 255, "g": 75 / 255, "b": 75 / 255, "a": 1 }, "offset": { "x": 0, "y": -1 }, "spread": 0, "visible": true, "blendMode": "normal", "showShadowBehindNode": false, "blur": 0 }]
 		}
@@ -620,12 +622,24 @@ function Main() {
 			if (message.type === "data-received") {
 
 				data = message.data.data
+				let isLink = message.data.link
 
 				if (Number(message.data)) {
 					data = Number(message.data.data)
 				}
 
-				tableCells.set(currentCellId, { data, active })
+				let link = ""
+				if (isLink) {
+					if (data.startsWith("http://") || data.startsWith("https://")) {
+						link = data
+					}
+					else {
+						link = "http://" + data
+					}
+
+				}
+
+				tableCells.set(currentCellId, { data, active, link})
 
 				if (widgetSettings?.showCellsBeingEdited) {
 					addActiveCell(currentCellId)
@@ -1220,6 +1234,16 @@ function Main() {
 			strokePaint = activeCell.users[0] ? activeCell.users[0].color : false
 		}
 
+		let href = "";
+		let hrefBorder = "none";
+		// let hrefColor = false;
+
+		if (cell.link) {
+			href = cell.link
+			// hrefColor = "#007BFF";
+			hrefBorder = "underline";
+		}
+
 		return (
 			<AutoLayout width={width}
 
@@ -1249,15 +1273,14 @@ function Main() {
 					padding={{ "top": 14, "right": 14, "bottom": 14, "left": 13 }}
 					spacing={10}
 					overflow="visible">
-					<Text key={id} width="fill-parent"
+					<Text key={id} width="fill-parent" href={href}
 						name="Text"
-						x={13}
-						y={14}
 						blendMode="pass-through"
 						fill={theme.colorText}
 						fontFamily="Inter"
 						fontWeight="regular"
-						verticalAlignText="center">
+						verticalAlignText="center"
+						textDecoration={hrefBorder}>
 						{cell.data}
 					</Text>
 				</AutoLayout>
@@ -1701,7 +1724,7 @@ function Main() {
 	return (
 		<Table>
 			<TopBorder key="topBorder" color={widgetColor} />
-			<Title></Title>
+			<Title key="title"></Title>
 			<Rows key="rows">
 				{rows.map((rowId, rowIndex) => {
 					let lastRow = false

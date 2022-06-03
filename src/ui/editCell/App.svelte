@@ -10,6 +10,7 @@
 	let colElement
 	let rowElement
 	let button
+	let link = ""
 
 	const alphabet = [
 		'', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'
@@ -33,6 +34,24 @@
 		}
 	}
 
+	function checkIfLink(text) {
+		if (text) {
+			// Removed : for now from expression because causes error in figma
+			var expression = /^(https?:\/\/)?(www\.)?[-a-zA-Z0-9@%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#()?&//=]*)$/gi;
+			var regex = new RegExp(expression);
+			var t = text;
+
+			if (t.match(regex)) {
+				return true
+			} else {
+				return false
+			}
+		}
+
+	}
+
+	// link = checkIfLink(data)
+
 	function updateRows(input) {
 		input.parentNode.dataset.replicatedValue = input.value
 		var textareaHeight = input.clientHeight
@@ -47,19 +66,21 @@
 		input.addEventListener('input', (e) => {
 			input.parentNode.dataset.replicatedValue = input.value
 			var textareaHeight = input.clientHeight
-			parent.postMessage({ pluginMessage: { type: 'data-received', data: { data: input.value } } }, '*');
+			link = checkIfLink(input.value)
+			parent.postMessage({ pluginMessage: { type: 'data-received', data: { data: input.value, link } } }, '*');
 			parent.postMessage({ pluginMessage: { type: 'resize-ui', data: { textareaHeight } } }, '*');
 			// setNumberRows(editor)
 		})
 
 		input.addEventListener('keydown', (e) => {
 			var textareaHeight = input.clientHeight
+			link = checkIfLink(input.value)
 			if ((e.key === 'Enter' && e.metaKey) || (e.key === 'Enter' && e.ctrlKey)) {
-				parent.postMessage({ pluginMessage: { type: 'data-received', data: { data: input.value } } }, '*');
+				parent.postMessage({ pluginMessage: { type: 'data-received', data: { data: input.value, link } } }, '*');
 				// setNumberRows(editor)
 			}
 			else if (e.key !== 'Enter' && e.which === 37 && e.which === 38 && e.which === 39 && e.which === 38 && e.which === 40) {
-				parent.postMessage({ pluginMessage: { type: 'data-received', data: { data: input.value } } }, '*');
+				parent.postMessage({ pluginMessage: { type: 'data-received', data: { data: input.value, link} } }, '*');
 				// setNumberRows(editor)
 			}
 		})
@@ -75,11 +96,11 @@
 				}
 
 				if ((e.key === 'Enter' && !e.shiftKey && !e.ctrlKey && !e.metaKey) || ((e.metaKey || e.ctrlKey) && e.which === 40)) {
-					parent.postMessage({ pluginMessage: { type: 'next-cell', data: { data: input.value, colIndex, rowIndex }, target: [null, 1] } }, '*');
+					parent.postMessage({ pluginMessage: { type: 'next-cell', data: { data: input.value, colIndex, rowIndex, link }, target: [null, 1] } }, '*');
 				}
 
 				if ((e.key === 'Enter' && e.shiftKey) || ((e.metaKey || e.ctrlKey) && e.which === 38)) {
-					parent.postMessage({ pluginMessage: { type: 'next-cell', data: { data: input.value, colIndex, rowIndex }, target: [null, -1] } }, '*');
+					parent.postMessage({ pluginMessage: { type: 'next-cell', data: { data: input.value, colIndex, rowIndex, link }, target: [null, -1] } }, '*');
 				}
 			});
 		}
@@ -93,13 +114,13 @@
 
 				if (((e.metaKey || e.ctrlKey) && e.which === 40)) {
 
-					parent.postMessage({ pluginMessage: { type: 'next-cell', data: { data: input.value, colIndex, rowIndex }, target: [null, 1] } }, '*');
+					parent.postMessage({ pluginMessage: { type: 'next-cell', data: { data: input.value, colIndex, rowIndex, link }, target: [null, 1] } }, '*');
 
 				}
 
 
 				if (((e.metaKey || e.ctrlKey) && e.which === 38)) {
-					parent.postMessage({ pluginMessage: { type: 'next-cell', data: { data: input.value, colIndex, rowIndex }, target: [null, -1] } }, '*');
+					parent.postMessage({ pluginMessage: { type: 'next-cell', data: { data: input.value, colIndex, rowIndex, link }, target: [null, -1] } }, '*');
 				}
 			});
 
@@ -120,7 +141,7 @@
 			if ((e.key === "Tab" && !e.shiftKey) || ((e.metaKey || e.ctrlKey) && e.which === 39)) {
 				e.preventDefault()
 
-				parent.postMessage({ pluginMessage: { type: 'next-cell', data: { data: editor.value, colIndex, rowIndex }, target: [1, null] } }, '*');
+				parent.postMessage({ pluginMessage: { type: 'next-cell', data: { data: editor.value, colIndex, rowIndex, link }, target: [1, null] } }, '*');
 
 			}
 			if (e.key === "Escape") {
@@ -135,7 +156,7 @@
 			if ((e.key === "Tab" && e.shiftKey) || ((e.metaKey || e.ctrlKey) && e.which === 37)) {
 				e.preventDefault()
 
-				parent.postMessage({ pluginMessage: { type: 'next-cell', data: { data: editor.value, colIndex, rowIndex }, target: [-1, null] } }, '*');
+				parent.postMessage({ pluginMessage: { type: 'next-cell', data: { data: editor.value, colIndex, rowIndex, link }, target: [-1, null] } }, '*');
 
 			}
 		});

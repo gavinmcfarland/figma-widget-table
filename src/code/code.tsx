@@ -990,7 +990,7 @@ function Main() {
 						figma.showUI(`
 					<style>${__uiFiles__["css"]}</style>
 					${__uiFiles__["settings"]}
-          `, { width: 300, height: 300, themeColors: true });
+          `, { width: 300, height: 332, themeColors: true });
 
 						figma.ui.postMessage({ type: "post-settings", settings, widgetSettings, widgetTheme, widgetFirstRowAsHeader })
 

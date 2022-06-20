@@ -2088,21 +2088,22 @@ key {
 /* Really hacky way to style column size buttons */
 
 .button--fourth {
-	background-color: var(--white);
+	background-color: var(--figma-color-bg);
 	border-width: 1px;
-	color: var(--black8);
+	color: var(--figma-color-bg);
 	padding: 0 calc(var(--size-xsmall) + 1px) 0 calc(var(--size-xsmall) + 1px);
 	letter-spacing: var(--font-letter-spacing-pos-small);
 }
 
-.button--fourth:hover {
-	border-color: var(--black8);
-}
+/* .button--fourth.button--fourth:hover {
+	border-color: var(--figma-color-border);
+	color: var(--figma-color-border)
+} */
 
 .medium {
 	/* border-width: 2px; */
-	background-color: #222222;
-	border-color: none;
+	background-color: var(--figma-color-border);
+	border-color: var(--figma-color-border);
 	color: white;
 }
 
@@ -2110,18 +2111,27 @@ key {
 .size-medium > *,
 .size-large > * {
 	/* border-width: 1px; */
-	background-color: white;
-	border-color: #222222;
-	color: var(--black8);
+	background-color: transparent;
+	border-color: var(--figma-color-border);
+	color: var(--figma-color-text);
 }
 
 .size-small .small,
 .size-medium .medium,
 .size-large .large {
 	/* border-width: 2px; */
-	background-color: #222222;
+	background-color: var(--figma-color-text);
 	border-color: none;
-	color: white;
+	color: var(--figma-color-bg);
+}
+
+.size-small .small:hover,
+.size-medium .medium:hover,
+.size-large .large:hover {
+	/* border-width: 2px; */
+	background-color: var(--figma-color-text);
+	border-color: none;
+	color: var(--figma-color-bg);
 }
 
 .secondary-text {

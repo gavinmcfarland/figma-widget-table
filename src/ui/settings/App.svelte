@@ -4,7 +4,8 @@
 	let exportFile
 	let navigateOnEnterInput
 	let clearTable
-	let showCellsBeingEdited
+	let useDarkTheme
+	let firstRowAsHeader
 
 	function saveAs(content, filename) {
 		const blob = new File([content], filename, { type: "text/plain" });
@@ -39,7 +40,16 @@
 
 		if (message.type === "post-settings") {
 			navigateOnEnterInput.checked = message.settings.navigateOnEnter
-			showCellsBeingEdited.checked = message.widgetSettings.showCellsBeingEdited
+			firstRowAsHeader.checked = message.widgetFirstRowAsHeader
+
+			if (message.widgetTheme === "dark") {
+				useDarkTheme.checked = true
+			}
+			else {
+				useDarkTheme.checked = false
+			}
+
+
 		}
 
 		if (message.type === "export-data") {
@@ -53,20 +63,24 @@
 			parent.postMessage({ pluginMessage: { type: "export-data" } }, '*');
 		})
 
-
-
-
 		navigateOnEnterInput.addEventListener('input', () => {
 			console.log("toggled")
 			parent.postMessage({ pluginMessage: { type: "settings-saved", settings: { navigateOnEnter: navigateOnEnterInput.checked } } }, '*');
 		})
 
-		showCellsBeingEdited.addEventListener('input', () => {
-			console.log("toggled")
-			parent.postMessage({ pluginMessage: { type: "widget-settings-saved", settings: { showCellsBeingEdited: showCellsBeingEdited.checked } } }, '*');
+		firstRowAsHeader.addEventListener('input', () => {
+			parent.postMessage({ pluginMessage: { type: "widget-first-row-as-header-saved", firstRowAsHeader: firstRowAsHeader.checked } }, '*');
 		})
 
+		useDarkTheme.addEventListener('input', () => {
+			let theme = "light";
 
+			if (useDarkTheme.checked) {
+				theme = "dark"
+			}
+
+			parent.postMessage({ pluginMessage: { type: "widget-theme-saved", theme } }, '*');
+		})
 
 		clearTable.addEventListener('click', () => {
 			parent.postMessage({ pluginMessage: { type: "clear-table" } }, '*');
@@ -79,13 +93,18 @@
 
 <div class="m-xsmall type--small">
 	<p class="type--bold">Settings</p>
+
 	<div class="checkbox">
 		<input id="navigateOnEnterInput" bind:this="{navigateOnEnterInput}" type="checkbox" class="checkbox__box">
 		<label for="navigateOnEnterInput" class="checkbox__label">Navigate to cell below on enter</label>
 	</div>
 	<div class="checkbox">
-		<input id="showCellsBeingEdited" bind:this="{showCellsBeingEdited}" type="checkbox" class="checkbox__box">
-		<label for="showCellsBeingEdited" class="checkbox__label">Highlight cells being edited <span class="experimental">Experimental</span></label>
+		<input id="useDarkTheme" bind:this="{useDarkTheme}" type="checkbox" class="checkbox__box">
+		<label for="useDarkTheme" class="checkbox__label">Use dark theme for widget</label>
+	</div>
+	<div class="checkbox">
+		<input id="firstRowAsHeader" bind:this="{firstRowAsHeader}" type="checkbox" class="checkbox__box">
+		<label for="firstRowAsHeader" class="checkbox__label">Use first row as header</label>
 	</div>
 	<hr>
 	<p class="type--bold">Export data</p>

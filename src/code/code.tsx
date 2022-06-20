@@ -138,6 +138,7 @@ function Main() {
 	let [dataEndpoint, setDataEndpoint] = useSyncedState("dataEndpoint", null)
 	let [widgetSettings, setWidgetSettings] = useSyncedState("widgetSettings", null)
 	let [widgetName, setWidgetName] = useSyncedState("widgetName", "")
+	let [widgetFirstRowAsHeader, setWidgetFirstRowAsHeader] = useSyncedState("widgetFirstRowAsHeader", true);
 
 	// Check activeUsers still exist
 	useEffect(() => {
@@ -185,7 +186,9 @@ function Main() {
 
 
 	// let [widgetColor, setWidgetColor] = useSyncedState("widgetColor", "#9747FF")
-	let [widgetColor, setWidgetColor] = useSyncedState("widgetColor", "ukraine")
+	let [widgetColor, setWidgetColor] = useSyncedState("widgetColor", "#9747FF")
+
+	let showCellsBeingEdited = true
 
 	const [isInitialized, setIsInitialized] = useSyncedState<boolean>('init', false)
 
@@ -464,15 +467,15 @@ function Main() {
 		})
 
 		// 2. Set new col entry
-		tableCols.set(uniqueId, { order: '' })
+		tableCols.set(uniqueId, { order: '', size: 'medium' })
 
 
 		// 2. Splice new entry into virtualEntries
-		virtualEntries.splice(colIndex + position, 0, [uniqueId, { order: '' }])
+		virtualEntries.splice(colIndex + position, 0, [uniqueId, { order: '', size: 'medium' }])
 
 		// 4. Reset order on entries now that new column has been created
 		virtualEntries.map((entry, i) => {
-			tableCols.set(entry[0], { ...entry[1], order: i })
+			tableCols.set(entry[0], { ...entry[1], order: i, size: entry[1].size })
 		})
 
 	}
@@ -546,7 +549,7 @@ function Main() {
 
 		const onmessage = (message) => {
 			// if (message.type === "window-loaded") {
-			// 	if (widgetSettings?.showCellsBeingEdited) {
+			// 	if (showCellsBeingEdited) {
 
 			// 		// tableCells.set(id, { data, active: figma.currentUser.color })
 
@@ -561,7 +564,7 @@ function Main() {
 				// When we receive the data it's a string, so we need to convert any numbers to numbers
 				data = convertToNumber(data)
 
-				if (widgetSettings?.showCellsBeingEdited) {
+				if (showCellsBeingEdited) {
 					// Reset current cell color before moving onto next
 					// let liveData = tableCells.get(currentCellId).data
 					// tableCells.set(currentCellId, { data: liveData, active: previousCellColor })
@@ -603,7 +606,7 @@ function Main() {
 
 					var nextCell = tableCells.get(currentCellId) || { data: '', active: false }
 
-					if (widgetSettings?.showCellsBeingEdited) {
+					if (showCellsBeingEdited) {
 						// Store the cell colour
 						// previousCellColor = nextCell.active
 
@@ -641,7 +644,7 @@ function Main() {
 
 				tableCells.set(currentCellId, { data, active, link})
 
-				if (widgetSettings?.showCellsBeingEdited) {
+				if (showCellsBeingEdited) {
 					addActiveCell(currentCellId)
 				}
 
@@ -663,7 +666,7 @@ function Main() {
 				figma.clientStorage.getAsync("userPreferences").then((settings) => {
 					settings = settings || { navigateOnEnter: false }
 
-					if (widgetSettings?.showCellsBeingEdited) {
+					if (showCellsBeingEdited) {
 
 						// tableCells.set(id, { data, active: figma.currentUser.color })
 
@@ -675,7 +678,7 @@ function Main() {
 					figma.ui.postMessage({ type: "show-ui", settings })
 					figma.ui.postMessage({ type: "post-data", data: {data, rowIndex, colIndex } })
 
-					// if (widgetSettings?.showCellsBeingEdited) {
+					// if (showCellsBeingEdited) {
 
 					// 	// tableCells.set(id, { data, active: figma.currentUser.color })
 
@@ -687,7 +690,7 @@ function Main() {
 
 				figma.ui.on('message', onmessage)
 
-				if (widgetSettings?.showCellsBeingEdited) {
+				if (showCellsBeingEdited) {
 					figma.on('close', () => {
 						removeActiveCell(currentCellId)
 					})
@@ -764,7 +767,13 @@ function Main() {
 
 		// Remove the entry which is the letterCell then the header?
 		var firstColEntry = colEntries.shift()
-		var secondColEntry = colEntries.shift()
+
+		var secondColEntry
+
+		if (widgetFirstRowAsHeader) {
+			secondColEntry = colEntries.shift()
+		}
+
 
 
 
@@ -787,7 +796,10 @@ function Main() {
 		})
 
 		// Add back the first entry which is the header?
-		colEntries.splice(0, 0, secondColEntry)
+		if (widgetFirstRowAsHeader) {
+			colEntries.splice(0, 0, secondColEntry)
+		}
+
 		colEntries.splice(0, 0, firstColEntry)
 
 		// Assign a new order to the rows
@@ -843,6 +855,12 @@ function Main() {
 		}
 	}
 
+	let iconSize = 16;
+
+	if (figma.editorType === "figjam") {
+		iconSize = 18
+	}
+
 	let colorItems = [
 		{
 			tooltip: '❤️ Ukraine',
@@ -850,32 +868,28 @@ function Main() {
 			itemType: 'action',
 			icon: (() => {
 				if (widgetColor === 'ukraine') {
-					return `<svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-					<path d="M14 27C21.1797 27 27 21.1797 27 14C27 6.8203 21.1797 1 14 1C6.8203 1 1 6.8203 1 14C1 21.1797 6.8203 27 14 27Z" stroke="#9747FF" stroke-width="2"/>
-					<path d="M14 24C19.5228 24 24 19.5228 24 14C24 8.47715 19.5228 4 14 4C8.47715 4 4 8.47715 4 14C4 19.5228 8.47715 24 14 24Z" fill="black"/>
-					<mask id="mask0_3_6" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="4" y="4" width="20" height="20">
-					<circle cx="14" cy="14" r="10" fill="#015ABA"/>
+					return `<svg width="${iconSize}" height="${iconSize}"  fill="none" xmlns="http://www.w3.org/2000/svg">
+					<mask id="mask0_2_56" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="${iconSize}" height="${iconSize}">
+					<rect width="${iconSize}" height="${iconSize}" rx="${iconSize / 2}" fill="#D9D9D9"/>
 					</mask>
-					<g mask="url(#mask0_3_6)">
-					<rect x="2" y="14" width="24" height="12" fill="#015ABA"/>
-					<rect x="2" y="14" width="24" height="12" fill="#FDD403"/>
-					<rect x="2" y="2" width="24" height="12" fill="#006ADB"/>
-					<circle cx="14" cy="14" r="9.5" stroke="white" stroke-opacity="0.3" style="mix-blend-mode:overlay"/>
+					<g mask="url(#mask0_2_56)">
+					<rect width="${iconSize}" height="${iconSize / 2}" fill="#006ADB"/>
+					<rect y="${iconSize / 2}" width="${iconSize}" height="${iconSize / 2}" fill="#FDD403"/>
+					<rect x="0.5" y="0.5" width="${iconSize - 1}" height="${iconSize - 1}" rx="7.5" stroke="white" stroke-opacity="0.16" style="mix-blend-mode:screen"/>
 					</g>
 					</svg>
-
-		`
+					`
 				} else {
-					return `<svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-					<path d="M14 24C19.5228 24 24 19.5228 24 14C24 8.47715 19.5228 4 14 4C8.47715 4 4 8.47715 4 14C4 19.5228 8.47715 24 14 24Z" fill="black"/>
-					<mask id="mask0_3_6" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="4" y="4" width="20" height="20">
-					<circle cx="14" cy="14" r="10" fill="#015ABA"/>
+					return `<svg width="${iconSize}" height="${iconSize}" fill="none" xmlns="http://www.w3.org/2000/svg">
+					<g style="mix-blend-mode:luminosity">
+					<mask id="mask0_2_49" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="${iconSize}" height="${iconSize}">
+					<rect width="${iconSize}" height="${iconSize}" rx="${iconSize / 2}" fill="#D9D9D9"/>
 					</mask>
-					<g mask="url(#mask0_3_6)">
-					<rect x="2" y="14" width="24" height="12" fill="#015ABA"/>
-					<rect x="2" y="14" width="24" height="12" fill="#FDD403"/>
-					<rect x="2" y="2" width="24" height="12" fill="#006ADB"/>
-					<circle cx="14" cy="14" r="9.5" stroke="white" stroke-opacity="0.3" style="mix-blend-mode:overlay"/>
+					<g mask="url(#mask0_2_49)">
+					<rect width="${iconSize}" height=" ${iconSize / 2}" fill="#575757"/>
+					<rect y="${iconSize / 2}" width="${iconSize}" height="${iconSize / 2}" fill="#C9C9C9"/>
+					<rect x="0.5" y="0.5" width="${iconSize - 1}" height="${iconSize - 1}" rx="7.5" stroke="white" stroke-opacity="0.16" style="mix-blend-mode:screen"/>
+					</g>
 					</g>
 					</svg>
 
@@ -923,19 +937,18 @@ function Main() {
 				tooltip: 'Import',
 				propertyName: 'import',
 				itemType: 'action',
-				icon: `<svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M21.5 10.25V14V21.5H6.5V14V10.25" stroke="white"/>
-<path fill-rule="evenodd" clip-rule="evenodd" d="M13.2246 13.2479L10.5763 10.5321L9.86035 11.2303L13.3512 14.81L13.7002 15.168L14.0582 14.8189L17.6379 11.3281L16.9397 10.6121L14.2277 13.2568C13.9563 9.5929 16.4138 6.19266 20.1069 5.38521L19.8933 4.40829C15.7353 5.3174 12.9592 9.12662 13.2246 13.2479Z" fill="white"/>
-</svg>`
+				icon: `<svg width="${iconSize}" height="${iconSize}" fill="none" xmlns="http://www.w3.org/2000/svg">
+				<path fill-rule="evenodd" clip-rule="evenodd" d="M7.64645 11.3534L8 11.7069L8.35355 11.3534L11.3536 8.35337L10.6464 7.64626L8.5 9.79271L8.5 1.99982H7.5L7.5 9.79271L5.35355 7.64626L4.64645 8.35337L7.64645 11.3534ZM2 11.9998H1V13.9999V14.9998V14.9999H15V14.9998V13.9999V11.9998H14V13.9999H2V11.9998Z" fill="white"/>
+				</svg>`
 			},
 			{
 				tooltip: 'Settings',
 				propertyName: 'settings',
 				itemType: 'action',
-				icon: `<svg width="29" height="28" viewBox="0 0 29 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M16.0947 22.7676C15.9745 23.2005 15.5804 23.5 15.1312 23.5H13.318C12.8688 23.5 12.4747 23.2005 12.3545 22.7676L12.0589 21.7034C11.4423 21.5304 10.8559 21.2854 10.3093 20.978L9.34684 21.522C8.95578 21.7431 8.46532 21.6762 8.14768 21.3586L6.86558 20.0765C6.54794 19.7588 6.48109 19.2684 6.70213 18.8773L7.24621 17.9147C6.939 17.3682 6.69413 16.782 6.52121 16.1657L5.45696 15.8701C5.02414 15.7499 4.72461 15.3558 4.72461 14.9066V13.0934C4.72461 12.6442 5.02414 12.2501 5.45696 12.1299L6.52121 11.8343C6.69417 11.2178 6.93912 10.6315 7.24644 10.0849L6.70259 9.12272C6.48156 8.73166 6.54841 8.2412 6.86605 7.92356L8.14815 6.64146C8.46579 6.32382 8.95625 6.25697 9.34731 6.478L10.3095 7.02185C10.8561 6.71452 11.4424 6.46956 12.0589 6.2966L12.3545 5.23236C12.4747 4.79954 12.8688 4.5 13.318 4.5H15.1312C15.5804 4.5 15.9745 4.79954 16.0947 5.23236L16.3903 6.29661C17.0069 6.46958 17.5933 6.71459 18.1399 7.02197L19.1024 6.47798C19.4934 6.25694 19.9839 6.3238 20.3015 6.64144L21.5836 7.92354C21.9013 8.24117 21.9681 8.73164 21.7471 9.1227L21.203 10.0853C21.5102 10.6318 21.7551 11.218 21.928 11.8343L22.9923 12.1299C23.4251 12.2501 23.7246 12.6442 23.7246 13.0934V14.9066C23.7246 15.3558 23.4251 15.7499 22.9923 15.8701L21.928 16.1657C21.7551 16.7822 21.5101 17.3685 21.2028 17.9151L21.7466 18.8773C21.9677 19.2683 21.9008 19.7588 21.5832 20.0764L20.3011 21.3585C19.9834 21.6762 19.493 21.743 19.1019 21.522L18.1397 20.9782C17.5931 21.2855 17.0068 21.5304 16.3903 21.7034L16.0947 22.7676Z" stroke="white" stroke-linejoin="round"/>
-<circle cx="14.2246" cy="14" r="3.5" stroke="white"/>
-</svg>`
+				icon: `<svg width="${iconSize}" height="${iconSize}" fill="none" xmlns="http://www.w3.org/2000/svg">
+				<path fill-rule="evenodd" clip-rule="evenodd" d="M4 8.05001V1H5V8.05001C6.14112 8.28164 7 9.29052 7 10.5C7 11.7095 6.14112 12.7184 5 12.95V15H4V12.95C2.85888 12.7184 2 11.7095 2 10.5C2 9.29052 2.85888 8.28164 4 8.05001ZM6 10.5C6 11.3284 5.32843 12 4.5 12C3.67157 12 3 11.3284 3 10.5C3 9.67157 3.67157 9 4.5 9C5.32843 9 6 9.67157 6 10.5ZM11 15H12V7.94999C13.1411 7.71836 14 6.70948 14 5.5C14 4.29052 13.1411 3.28164 12 3.05001V1H11V3.05001C9.85888 3.28164 9 4.29052 9 5.5C9 6.70948 9.85888 7.71836 11 7.94999V15ZM13 5.5C13 4.67157 12.3284 4 11.5 4C10.6716 4 10 4.67157 10 5.5C10 6.32843 10.6716 7 11.5 7C12.3284 7 13 6.32843 13 5.5Z" fill="white"/>
+				</svg>
+				`
 			}
 		],
 		async ({ propertyName, propertyValue }) => {
@@ -979,7 +992,7 @@ function Main() {
 					${__uiFiles__["settings"]}
           `, { width: 300, height: 300, themeColors: true });
 
-						figma.ui.postMessage({ type: "post-settings", settings, widgetSettings })
+						figma.ui.postMessage({ type: "post-settings", settings, widgetSettings, widgetTheme, widgetFirstRowAsHeader })
 
 
 						function exportToString(rows, cols) {
@@ -1026,6 +1039,12 @@ function Main() {
 										activeCells.delete(entry[0])
 									})
 								}
+							}
+							if (message.type === "widget-theme-saved") {
+								setWidgetTheme(message.theme)
+							}
+							if (message.type === "widget-first-row-as-header-saved") {
+								setWidgetFirstRowAsHeader(message.firstRowAsHeader)
 							}
 							if (message.type === "clear-table") {
 								tableCells.entries().map((entry) => {
@@ -1223,7 +1242,7 @@ function Main() {
 		var width = setWidth(col)
 
 
-		var strokePaint = false;
+		var strokePaint = [];
 
 		var strokeWidth = 0
 
@@ -1231,12 +1250,11 @@ function Main() {
 
 		if (activeCell) {
 			strokeWidth = activeCell.users[0] ? 2 : 0
-			strokePaint = activeCell.users[0] ? activeCell.users[0].color : false
+			strokePaint = activeCell.users[0] ? activeCell.users[0].color : []
 		}
 
 		let href = "";
 		let hrefBorder = "none";
-		// let hrefColor = false;
 
 		if (cell.link) {
 			href = cell.link
@@ -1278,7 +1296,7 @@ function Main() {
 						blendMode="pass-through"
 						fill={theme.colorText}
 						fontFamily="Inter"
-						fontWeight="regular"
+						fontWeight={400}
 						verticalAlignText="center"
 						textDecoration={hrefBorder}>
 						{cell.data}
@@ -1305,7 +1323,7 @@ function Main() {
 
 	function HeaderCell({ children, rowIndex, colIndex, id, cell, col }) {
 
-		var strokePaint = false;
+		var strokePaint = [];
 		var strokeWidth = 0
 
 		var width = setWidth(col)
@@ -1314,7 +1332,16 @@ function Main() {
 
 		if (activeCell) {
 			strokeWidth = activeCell.users[0] ? 2 : 0
-			strokePaint = activeCell.users[0] ? activeCell.users[0].color : false
+			strokePaint = activeCell.users[0] ? activeCell.users[0].color : []
+		}
+
+		let href = "";
+		let hrefBorder = "none";
+
+		if (cell.link) {
+			href = cell.link
+			// hrefColor = "#007BFF";
+			hrefBorder = "underline";
 		}
 
 		let [colId, rowId] = id.split(':')
@@ -1354,15 +1381,16 @@ function Main() {
 					stroke={strokePaint}
 					strokeWidth={strokeWidth}
 					overflow="visible">
-					<Text width="fill-parent"
+					<Text width="fill-parent" href={href}
 						name="Text"
 						x={13}
 						y={14}
 						blendMode="pass-through"
 						fill={theme.colorText}
 						fontFamily="Inter"
-						fontWeight="semi-bold"
-						verticalAlignText="center">
+						fontWeight={600}
+						verticalAlignText="center"
+						textDecoration={hrefBorder}>
 						{cell.data}
 					</Text>
 				</AutoLayout>
@@ -1386,7 +1414,6 @@ function Main() {
 				fill={theme.colorBgSecondary}
 				cornerRadius={{ "topLeft": 0, "topRight": 0, "bottomLeft": 0, "bottomRight": 0 }}
 
-				spacing={4}
 				overflow="hidden"
 				onClick={(event) => {
 					return new Promise((resolve) => {
@@ -1493,21 +1520,34 @@ function Main() {
 
 				 <AutoLayout
 				 width="fill-parent"
-				 padding={{ "top": 8, "right": 6, "bottom": 8, "left": 4 }}
+				 padding={{ "top": 3, "right": 3, "bottom": 3, "left": 3 }}
 				 >
-					 <Text width="fill-parent"
-					name="Column Letter"
+					 <AutoLayout
+						name="Hover"
+						cornerRadius={2}
+						overflow="visible"
+						hoverStyle={{
+							fill: theme.colorBgTertiary,
+						  }}
+						width="fill-parent"
+						horizontalAlignItems="center"
+						verticalAlignItems="center"
+						>
+							<Text width="fill-parent"
+							name="Column Letter"
 
-					x={4}
-					y={4}
-					blendMode="pass-through"
-					fill={theme.colorTextTertiary}
-					fontSize={12}
-					fontFamily="Inter"
-					fontWeight="bold"
-					horizontalAlignText="center">
-					{alphabet[colIndex]}
-				</Text>
+							x={4}
+							y={4}
+							blendMode="pass-through"
+							fill={theme.colorTextTertiary}
+							fontSize={12}
+							fontFamily="Inter"
+							fontWeight={600}
+							horizontalAlignText="center"
+							lineHeight={26}>
+							{alphabet[colIndex]}
+						</Text>
+					</AutoLayout>
 				 </AutoLayout>
 
 			</AutoLayout>
@@ -1524,7 +1564,7 @@ function Main() {
 				blendMode="pass-through"
 				fill={theme.colorBgSecondary}
 				cornerRadius={{ "topLeft": 0, "topRight": 0, "bottomLeft": 0, "bottomRight": 0 }}
-				padding={{ "top": 4, "right": 4, "bottom": 4, "left": 4 }}
+				padding={{ "top": 3, "right": 3, "bottom": 3, "left": 3 }}
 				verticalAlignItems="center"
 				overflow="hidden"
 				onClick={() => {
@@ -1576,6 +1616,18 @@ function Main() {
 					})
 				}}
 			>
+				<AutoLayout
+						name="Hover"
+						cornerRadius={2}
+						overflow="visible"
+						hoverStyle={{
+							fill: theme.colorBgTertiary,
+						  }}
+						width="fill-parent"
+						height="fill-parent"
+						horizontalAlignItems="center"
+						verticalAlignItems="center"
+						>
 				<Text width="fill-parent"
 					name="Text"
 					x={4}
@@ -1584,11 +1636,12 @@ function Main() {
 					fill={theme.colorTextTertiary}
 					fontSize={12}
 					fontFamily="Inter"
-					fontWeight="bold"
+					fontWeight={600}
 					horizontalAlignText="center"
 					verticalAlignText="center">
 					{rowIndex}
 				</Text>
+				</AutoLayout>
 			</AutoLayout>
 		)
 	}
@@ -1613,7 +1666,7 @@ function Main() {
 					fill={theme.colorText}
 					fontSize={12}
 					fontFamily="Inter"
-					fontWeight="bold"
+					fontWeight={600}
 					horizontalAlignText="center"
 					verticalAlignText="center">
 					{children}
@@ -1626,7 +1679,7 @@ function Main() {
 		let effect = theme.shadowBorderBottom
 		let padding = { "top": 0, "right": 0, "bottom": 1, "left": 0 }
 		if (lastRow) {
-			effect = false
+			effect = []
 			padding = 0
 		}
 		return (
@@ -1750,7 +1803,7 @@ function Main() {
 									if (rowIndex === 0) {
 										return <ColumnLetter key={cellId} id={cellId} rowIndex={rowIndex} colIndex={colIndex} col={col}>{cell}</ColumnLetter>
 									}
-									else if (rowIndex === 1) {
+									else if (rowIndex === 1 && widgetFirstRowAsHeader) {
 										return <HeaderCell key={cellId} cell={cell} id={cellId} rowIndex={rowIndex} colIndex={colIndex} col={col}></HeaderCell>
 									}
 									else {

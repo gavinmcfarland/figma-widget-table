@@ -3,7 +3,7 @@
   "api": "1.0.0",
   "widgetApi": "1.0.0",
   "id": "1027585818512741999",
-  "editorType": ["figjam"],
+  "editorType": ["figjam", "figma"],
   "containsWidget": true,
   "main": "dist/code.js",
   "ui": {

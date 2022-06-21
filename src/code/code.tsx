@@ -2,6 +2,7 @@ var _ = require('lodash');
 const { widget } = figma
 const { Frame, Text, Ellipse, Rectangle, SVG, useSyncedState, useSyncedMap, usePropertyMenu, AutoLayout, useWidgetId, useEffect, waitForTask, Input } = widget
 
+
 // TODO: Add ability to show/add title
 // TODO: Add ability to move  columns rows
 // TODO: Add ability to set alignment of text
@@ -24,18 +25,36 @@ function evalFunction(js) {
 
 	var value;
 
-	try {
-		// for expressions
-		// value = eval(js);
-		value = Function('"use strict";return (' + js + ')')()
-	} catch (e) {
-		// if (e instanceof SyntaxError) {
-		// 	try {
-		// 		// for statements
-		// 		value = (new Function('with(this) { ' + js + ' }')).call(context);
-		// 	} catch (e) {}
-		// }
-		console.log(e)
+	var reg = /(?:[a-z$_][a-z0-9$_]*)|(?:[;={}\[\]"'!&<>^\\?:])/ig,
+        valid = true;
+
+    // Detect valid JS identifier names and replace them
+    js = js.replace(reg, function ($0) {
+        // If the name is a direct member of Math, allow
+        if (Math.hasOwnProperty($0))
+            return "Math."+$0;
+        // Otherwise the expression is invalid
+        else
+            valid = false;
+    });
+
+
+
+	if (valid) {
+		console.log("is valid")
+		try {
+			// for expressions
+			// value = eval(js);
+			value = Function('"use strict";return (' + js + ')')()
+		} catch (e) {
+			// if (e instanceof SyntaxError) {
+			// 	try {
+			// 		// for statements
+			// 		value = (new Function('with(this) { ' + js + ' }')).call(context);
+			// 	} catch (e) {}
+			// }
+			console.log(e)
+		}
 	}
 
 	return value;

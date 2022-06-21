@@ -54,22 +54,41 @@
 
 		var value;
 
-		try {
-			// for expressions
-			// value = eval(js);
-			value = Function('"use strict";return (' + js + ')')()
-		} catch (e) {
-			// if (e instanceof SyntaxError) {
-			// 	try {
-			// 		// for statements
-			// 		value = (new Function('with(this) { ' + js + ' }')).call(context);
-			// 	} catch (e) {}
-			// }
-			console.log(e)
+		var reg = /(?:[a-z$_][a-z0-9$_]*)|(?:[;={}\[\]"'!&<>^\\?:])/ig,
+        valid = true;
+
+		// Detect valid JS identifier names and replace them
+		js = js.replace(reg, function ($0) {
+			// If the name is a direct member of Math, allow
+			if (Math.hasOwnProperty($0))
+				return "Math."+$0;
+			// Otherwise the expression is invalid
+			else
+				valid = false;
+		});
+
+
+
+		if (valid) {
+
+			try {
+				// for expressions
+				// value = eval(js);
+				value = Function('"use strict";return (' + js + ')')()
+			} catch (e) {
+				// if (e instanceof SyntaxError) {
+				// 	try {
+				// 		// for statements
+				// 		value = (new Function('with(this) { ' + js + ' }')).call(context);
+				// 	} catch (e) {}
+				// }
+				console.log(e)
+			}
 		}
 
 		return value;
 	}
+
 
 	// link = checkIfLink(data)
 

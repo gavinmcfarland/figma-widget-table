@@ -41,7 +41,6 @@ function evalFunction(js) {
 
 
 	if (valid) {
-		console.log("is valid")
 		try {
 			// for expressions
 			// value = eval(js);
@@ -62,18 +61,22 @@ function evalFunction(js) {
 
 function evalData(data) {
 	let renderedData = data
-	if (data === "=") {
-		renderedData = ""
-	}
-	else if (data.startsWith("=")) {
-		let evalCode = evalFunction(data.substring(1))
-		if (evalCode || evalCode === 0) {
-			renderedData = evalCode
+	// only run on strings
+	if (typeof data === 'string' || data instanceof String) {
+		if (data === "=") {
+			renderedData = ""
 		}
-		else {
-			renderedData = "#ERROR!"
+		else if (data.startsWith("=")) {
+			let evalCode = evalFunction(data.substring(1))
+			if (evalCode || evalCode === 0) {
+				renderedData = evalCode
+			}
+			else {
+				renderedData = "#ERROR!"
+			}
 		}
 	}
+
 	return renderedData
 }
 
@@ -150,9 +153,9 @@ const alphabet = [
 
 function cellHeight(height) {
 	if (height > 277) {
-		height = 277+140
+		height = 277+94
 	} else {
-		height += 141
+		height += 94
 	}
 
 	return height
@@ -535,6 +538,58 @@ function Main() {
 
 	}
 
+	function moveColumn(colIndex, position = 1) {
+
+		function move(array, from, to){
+			array.splice(to, 0, array.splice(from,1)[0]);
+			return array;
+		};
+
+		var virtualEntries = tableCols.entries()
+
+		// 1. Sort the entries in order
+		virtualEntries.sort((a, b) => {
+			if (a[1].order > b[1].order) return 1;
+			if (b[1].order > a[1].order) return -1;
+
+			return 0;
+		})
+
+		virtualEntries = move(virtualEntries, colIndex, colIndex + position)
+
+		// 4. Reset order on entries now that new column has been created
+		virtualEntries.map((entry, i) => {
+			tableCols.set(entry[0], { ...entry[1], order: i, size: entry[1].size })
+		})
+
+	}
+
+	function moveRow(rowIndex, position = 1) {
+
+		function move(array, from, to){
+			array.splice(to, 0, array.splice(from,1)[0]);
+			return array;
+		};
+
+		var virtualEntries = tableRows.entries()
+
+		// 1. Sort the entries in order
+		virtualEntries.sort((a, b) => {
+			if (a[1].order > b[1].order) return 1;
+			if (b[1].order > a[1].order) return -1;
+
+			return 0;
+		})
+
+		virtualEntries = move(virtualEntries, rowIndex, rowIndex + position)
+
+		// 4. Reset order on entries now that new column has been created
+		virtualEntries.map((entry, i) => {
+			tableRows.set(entry[0], { ...entry[1], order: i, size: entry[1].size })
+		})
+
+	}
+
 	function addRow(rowIndex, position = 1) {
 		var uniqueId = genRandomId(rowIndex + 1)
 
@@ -692,7 +747,18 @@ function Main() {
 						link = data
 					}
 					else {
-						link = "http://" + data
+
+						// TODO: Mailto: not supported by href on Text
+						// var expression = /(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/gm
+						// var regex = new RegExp(expression);
+						// if (data.match(regex)) {
+						// 	link = "mailto:" + data
+						// 	console.log(link)
+						// }
+						// else {
+							link = "http://" + data
+						// }
+
 					}
 
 				}
@@ -706,8 +772,6 @@ function Main() {
 				if (showCellsBeingEdited) {
 					addActiveCell(currentCellId)
 				}
-
-				console.log(data)
 
 				// figma.commitUndo();
 
@@ -735,7 +799,7 @@ function Main() {
 						addActiveCell(id)
 					}
 
-					figma.showUI(`<style>${__uiFiles__["css"]}</style>${__uiFiles__["editCell"]}`, { width: 300, height: cellHeight(31), themeColors: true });
+					figma.showUI(`<style>${__uiFiles__["css"]}</style>${__uiFiles__["editCell"]}`, { title: "Cell", width: 300, height: cellHeight(31), themeColors: true });
 					figma.ui.postMessage({ type: "show-ui", settings })
 					figma.ui.postMessage({ type: "post-data", data: {data, rowIndex, colIndex } })
 
@@ -848,10 +912,10 @@ function Main() {
 
 			// Reverse the sorting
 			if (sortDescending) {
-				return a[1].data > b[1].data ? -1 : 1;
+				return  evalData(a[1].data) > evalData(b[1].data) ? -1 : 1;
 			}
 			else {
-				return a[1].data < b[1].data ? -1 : 1;
+				return evalData(a[1].data) < evalData(b[1].data) ? -1 : 1;
 			}
 
 		})
@@ -1051,7 +1115,7 @@ function Main() {
 						figma.showUI(`
 					<style>${__uiFiles__["css"]}</style>
 					${__uiFiles__["settings"]}
-          `, { width: 300, height: 332, themeColors: true });
+          `, { title: "Settings", width: 300, height: 332, themeColors: true });
 
 						figma.ui.postMessage({ type: "post-settings", settings, widgetSettings, widgetTheme, widgetFirstRowAsHeader })
 
@@ -1130,7 +1194,7 @@ function Main() {
 					figma.showUI(`
 					<style>${__uiFiles__["css"]}</style>
 					${__uiFiles__["import"]}
-          `, { width: 340, height: 292, themeColors: true });
+          `, { title: "Import", width: 340, height: 292, themeColors: true });
 
 					// if (dataEndpoint) {
 						figma.ui.postMessage({ dataEndpoint })
@@ -1490,13 +1554,13 @@ function Main() {
 						figma.showUI(`
 						<style>${__uiFiles__["css"]}</style>
 						<div id="actions" class="m-xsmall type--small">
-							<p>Column ${alphabet[colIndex]}</p>
-							<button class="button button--secondary mt-xsmall" style="width: 100%" id="insertToLeft">Insert to Left</button>
-							<br/>
+							<button class="button button--secondary mb-xxsmall" style="width: 100%" id="insertToLeft">Insert to Left</button>
 							<button class="button button--secondary mb-xsmall" style="width: 100%" href="#" id="insertToRight">Insert to Right</button>
 							<hr/>
-							<button class="button button--secondary mt-xsmall" style="width: 100%" href="#" id="sortAscending">Sort Table A-Z</button>
-							<br/>
+							<button class="button button--secondary mb-xxsmall mt-xsmall" style="width: 100%" href="#" id="moveToLeft">Move to Left</button>
+							<button class="button button--secondary mb-xsmall" style="width: 100%" href="#" id="moveToRight">Move to Right</button>
+							<hr/>
+							<button class="button button--secondary mt-xsmall mb-xxsmall" style="width: 100%" href="#" id="sortAscending">Sort Table A-Z</button>
 							<button class="button button--secondary mb-xsmall" style="width: 100%" href="#" id="sortDescending">Sort Table Z-A</button>
 							<hr/>
 							<div class="button-group size-${col.size}">
@@ -1524,6 +1588,12 @@ function Main() {
 				insertToLeft.addEventListener("click", () => {
 					parent.postMessage({ pluginMessage: {type: 'insert-to-left'} }, '*');
 				})
+				moveToLeft.addEventListener("click", () => {
+					parent.postMessage({ pluginMessage: {type: 'move-to-left'} }, '*');
+				})
+				moveToRight.addEventListener("click", () => {
+					parent.postMessage({ pluginMessage: {type: 'move-to-right'} }, '*');
+				})
 				sortAscending.addEventListener("click", () => {
 					parent.postMessage({ pluginMessage: {type: 'sort-ascending'} }, '*');
 				})
@@ -1540,7 +1610,7 @@ function Main() {
 					parent.postMessage({ pluginMessage: {type: 'resize-column', size: 'large'} }, '*');
 				})
 				</script>
-			`, { width: 200, height: 386, themeColors: true });
+			`, { title: `Column ${alphabet[colIndex]}`, width: 200, height: 444, themeColors: true });
 			// position: {x: event.canvasX - 130, y: event.canvasY + 20}
 						figma.ui.onmessage = (message) => {
 
@@ -1554,6 +1624,14 @@ function Main() {
 
 							if (message.type === 'insert-to-left') {
 								addColumn(colIndex, 0)
+							}
+
+							if (message.type === 'move-to-right') {
+								moveColumn(colIndex)
+							}
+
+							if (message.type === 'move-to-left') {
+								moveColumn(colIndex, -1)
 							}
 
 							if (message.type === 'sort-ascending') {
@@ -1640,11 +1718,13 @@ function Main() {
 					return new Promise((resolve) => {
 						figma.showUI(`
 						<style>${__uiFiles__["css"]}</style>
+
 						<div id="actions" class="m-xsmall type--small">
-							<p>Row ${rowIndex}</p>
-							<button class="button button--secondary" style="width: 100%" id="insertAbove">Insert Above</button>
-							<br/>
+							<button class="button button--secondary mb-xxsmall" style="width: 100%" id="insertAbove">Insert Above</button>
 							<button class="button button--secondary mb-xsmall" style="width: 100%" id="insertBelow">Insert Below</button>
+							<hr/>
+							<button class="button button--secondary mb-xxsmall mt-xsmall" style="width: 100%" id="moveUp">Move Up</button>
+							<button class="button button--secondary mb-xsmall" style="width: 100%" id="moveDown">Move Down</button>
 							<hr/>
 							<button class="button button--secondary mt-xsmall" style="width: 100%" id="deleteRow">Delete Row</button>
 						</div>
@@ -1663,8 +1743,14 @@ function Main() {
 				insertBelow.addEventListener("click", () => {
 					parent.postMessage({ pluginMessage: {type: 'insert-below'} }, '*');
 				})
+				moveDown.addEventListener("click", () => {
+					parent.postMessage({ pluginMessage: {type: 'move-down'} }, '*');
+				})
+				moveUp.addEventListener("click", () => {
+					parent.postMessage({ pluginMessage: {type: 'move-up'} }, '*');
+				})
 				</script>
-			`, { width: 200, height: 208, themeColors: true});
+			`, { title: `Row ${rowIndex}`, width: 200, height: 274, themeColors: true});
 						figma.ui.onmessage = (message) => {
 
 							if (message.type === 'delete-row') {
@@ -1677,6 +1763,14 @@ function Main() {
 
 							if (message.type === 'insert-below') {
 								addRow(rowIndex, 1)
+							}
+
+							if (message.type === 'move-down') {
+								moveRow(rowIndex)
+							}
+
+							if (message.type === 'move-up') {
+								moveRow(rowIndex, -1)
 							}
 
 							resolve()

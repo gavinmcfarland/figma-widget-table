@@ -37,7 +37,7 @@
 	function checkIfLink(text) {
 		if (text) {
 			// Removed : for now from expression because causes error in figma
-			var expression = /^(https?:\/\/)?(www\.)?[-a-zA-Z0-9@%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#()?&//=]*)$/gi;
+			var expression = /^(https?:\/\/)?(www\.)?[-a-zA-Z0-9%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#()?&//=]*)$/gi;
 			var regex = new RegExp(expression);
 			var t = text;
 
@@ -256,7 +256,6 @@
 	onMount(async () => {
 
 		parent.postMessage({ pluginMessage: { type: "window-loaded" } }, '*');
-		console.log("window loaded")
 
 		// setInterval(() => {
 		// 	if (document.hasFocus()) {
@@ -294,9 +293,9 @@
 
 		});
 
-		button.addEventListener("click", () => {
-			parent.postMessage({ pluginMessage: { type: 'close-plugin' } }, '*');
-		})
+		// button.addEventListener("click", () => {
+		// 	parent.postMessage({ pluginMessage: { type: 'close-plugin' } }, '*');
+		// })
 	});
 
 
@@ -317,7 +316,7 @@
 			<textarea id="editor" bind:this="{editor}" class="textarea" rows="1" style="max-height: 277px; min-height: auto;"></textarea>
 		</div>
 		<p class="type-small secondary-text">Press <key>ctrl/cmd + enter</key> to create a new line</p>
-		<button class="button button--primary mt-xsmall" id="button" bind:this="{button}">Save</button>
+		<!-- <button class="button button--primary mt-xsmall" id="button" bind:this="{button}">Save</button> -->
 	</div>
 </body>
 

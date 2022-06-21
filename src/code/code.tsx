@@ -20,7 +20,43 @@ const { Frame, Text, Ellipse, Rectangle, SVG, useSyncedState, useSyncedMap, useP
 // TODO: Add setting to change theme of widget
 // TODO: Customise border radius of last cell DONE
 
+function evalFunction(js) {
 
+	var value;
+
+	try {
+		// for expressions
+		// value = eval(js);
+		value = Function('"use strict";return (' + js + ')')()
+	} catch (e) {
+		// if (e instanceof SyntaxError) {
+		// 	try {
+		// 		// for statements
+		// 		value = (new Function('with(this) { ' + js + ' }')).call(context);
+		// 	} catch (e) {}
+		// }
+		console.log(e)
+	}
+
+	return value;
+}
+
+function evalData(data) {
+	let renderedData = data
+	if (data === "=") {
+		renderedData = ""
+	}
+	else if (data.startsWith("=")) {
+		let evalCode = evalFunction(data.substring(1))
+		if (evalCode || evalCode === 0) {
+			renderedData = evalCode
+		}
+		else {
+			renderedData = "#ERROR!"
+		}
+	}
+	return renderedData
+}
 
 console.clear()
 
@@ -559,10 +595,10 @@ function Main() {
 			// }
 			if (message.type === "next-cell") {
 
-				({ data, colIndex, rowIndex } = message.data)
+				({ colIndex, rowIndex } = message.data)
 
-				// When we receive the data it's a string, so we need to convert any numbers to numbers
-				data = convertToNumber(data)
+				// // When we receive the data it's a string, so we need to convert any numbers to numbers
+				// data = convertToNumber(data)
 
 				if (showCellsBeingEdited) {
 					// Reset current cell color before moving onto next
@@ -642,11 +678,17 @@ function Main() {
 
 				}
 
+				if (data === "=") {
+					data = ""
+				}
+
 				tableCells.set(currentCellId, { data, active, link})
 
 				if (showCellsBeingEdited) {
 					addActiveCell(currentCellId)
 				}
+
+				console.log(data)
 
 				// figma.commitUndo();
 
@@ -1204,9 +1246,9 @@ function Main() {
 			name="Title"
 			fill={theme.colorBgSecondary}
 			padding={{
-			  top: 8,
+			  top: 5,
 			  right: 0,
-			  bottom: 0,
+			  bottom: 2,
 			  left: 0,
 			}}
 			width="fill-parent"
@@ -1262,6 +1304,11 @@ function Main() {
 			hrefBorder = "underline";
 		}
 
+		let data = evalData(cell.data)
+
+
+
+
 		return (
 			<AutoLayout width={width}
 
@@ -1299,7 +1346,7 @@ function Main() {
 						fontWeight={400}
 						verticalAlignText="center"
 						textDecoration={hrefBorder}>
-						{cell.data}
+						{data}
 					</Text>
 				</AutoLayout>
 				<Rectangle
@@ -1337,6 +1384,8 @@ function Main() {
 
 		let href = "";
 		let hrefBorder = "none";
+
+		let data = evalData(cell.data)
 
 		if (cell.link) {
 			href = cell.link
@@ -1391,7 +1440,7 @@ function Main() {
 						fontWeight={600}
 						verticalAlignText="center"
 						textDecoration={hrefBorder}>
-						{cell.data}
+						{data}
 					</Text>
 				</AutoLayout>
 			</AutoLayout>

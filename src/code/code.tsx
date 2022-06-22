@@ -1599,17 +1599,19 @@ function Main() {
 							<button class="customMenu__item" id="sortAscending">Sort Table A-Z</button>
 							<button class="customMenu__item" id="sortDescending">Sort Table Z-A</button>
 							<hr/>
-							<label class="customMenu__item input">Column Size <input id="resize" type="input" class="input__field" value="${width}"/></label>
+							<label class="customMenu__item input">Column Size <input id="resize" type="number"  onkeypress="return (event.charCode == 8 || event.charCode == 0 || event.charCode == 13) ? null : event.charCode >= 48 && event.charCode <= 57" class="input__field" value="${width}"/></label>
 							<hr/>
 							<button class="customMenu__item" id="deleteColumn">Delete Column</button>
 						</div>
 				<script>
+
 				const actions = document.getElementById("actions");
 				const insertToLeft = document.getElementById("insertToLeft");
 				const insertToRight = document.getElementById("insertToRight");
 				const deleteColumn = document.getElementById("deleteColumn");
 				const sortAscending = document.getElementById("sortAscending");
 				const sortDescending = document.getElementById("sortDescending");
+				const resize = document.getElementById("resize");
 
 				deleteColumn.addEventListener("click", () => {
 					parent.postMessage({ pluginMessage: {type: 'delete-column', rowIndex: ${rowIndex}, colIndex: ${colIndex}} }, '*');

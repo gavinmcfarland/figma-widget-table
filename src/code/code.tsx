@@ -1621,10 +1621,18 @@ function Main() {
 
 				window.focus()
 
-				window.addEventListener("blur", () => {
-					console.log("blured")
-					parent.postMessage({ pluginMessage: {type: 'close-plugin'} }, '*');
+				window.addEventListener("keydown", (event) => {
+					if (event.key === "Escape") {
+						parent.postMessage({ pluginMessage: {type: 'close-plugin'} }, '*');
+					}
 				});
+
+				// window.focus()
+
+				// window.addEventListener("blur", () => {
+				// 	console.log("blured")
+				// 	parent.postMessage({ pluginMessage: {type: 'close-plugin'} }, '*');
+				// });
 
 				deleteColumn.addEventListener("click", () => {
 					parent.postMessage({ pluginMessage: {type: 'delete-column', rowIndex: ${rowIndex}, colIndex: ${colIndex}} }, '*');
@@ -1657,8 +1665,8 @@ function Main() {
 					}
 				})
 				</script>
-			`, { title: `Column ${alphabet[colIndex]}`, width: 200, height: 264+8+8, themeColors: true, position: { x: event.canvasX + (10 / figma.viewport.zoom), y: event.canvasY - (48 / figma.viewport.zoom) } });
-			// position: {x: event.canvasX - 130, y: event.canvasY + 20}
+			`, { title: `Column ${alphabet[colIndex]}`, width: 200, height: 308+8+8, themeColors: true });
+			// position: { x: event.canvasX + (10 / figma.viewport.zoom), y: event.canvasY - (48 / figma.viewport.zoom) }
 						figma.ui.onmessage = (message) => {
 
 							if (message.type === 'delete-column') {
@@ -1776,7 +1784,6 @@ function Main() {
 				verticalAlignItems="center"
 				overflow="hidden"
 				onClick={(event) => {
-					console.log(id)
 					return new Promise((resolve) => {
 						figma.showUI(`
 						<style>${__uiFiles__["css"]}</style>
@@ -1798,10 +1805,16 @@ function Main() {
 
 				window.focus()
 
-				window.addEventListener("blur", () => {
-					console.log("blured")
-					parent.postMessage({ pluginMessage: {type: 'close-plugin'} }, '*');
+				window.addEventListener("keydown", (event) => {
+					if (event.key === "Escape") {
+						parent.postMessage({ pluginMessage: {type: 'close-plugin'} }, '*');
+					}
 				});
+
+				// window.addEventListener("blur", () => {
+				// 	console.log("blured")
+				// 	parent.postMessage({ pluginMessage: {type: 'close-plugin'} }, '*');
+				// });
 
 				deleteRow.addEventListener("click", () => {
 					parent.postMessage({ pluginMessage: {type: 'delete-row'} }, '*');
@@ -1819,7 +1832,8 @@ function Main() {
 					parent.postMessage({ pluginMessage: {type: 'move-up'} }, '*');
 				})
 				</script>
-			`, { title: `Row ${rowIndex}`, width: 200, height: 154 + 8 + 8, themeColors: true, position: { x: event.canvasX + (10 / figma.viewport.zoom), y: event.canvasY - (48 / figma.viewport.zoom)}});
+			`, { title: `Row ${rowIndex}`, width: 200, height: 184 + 8 + 8, themeColors: true});
+			// position: { x: event.canvasX + (10 / figma.viewport.zoom), y: event.canvasY - (48 / figma.viewport.zoom)}
 						figma.ui.onmessage = (message) => {
 
 							if (message.type === 'delete-row') {

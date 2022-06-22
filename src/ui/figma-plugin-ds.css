@@ -2131,7 +2131,7 @@ hr {
 	padding: 0 var(--size-xsmall) ;
     letter-spacing: var(--font-letter-spacing-pos-small);
 	position: relative;
-	line-height: 24px;
+	line-height: 30px;
 }
 
 .customMenu__item:hover {
@@ -2143,16 +2143,15 @@ hr {
 	align-items: center;
 	gap: 8px;
 	justify-content: space-between;
-	padding-top: 0;
-	padding-bottom: 0;
 }
 
 .customMenu__item.input .input__field {
 	width: 60px;
 	border-color: transparent;
 	text-align: right;
-	padding: 0px 8px;
+	padding: 4px 8px;
 	color: var(--figma-color-text-secondary);
+	line-height: 18px;
 }
 
 .customMenu__item.input .input__field:hover {

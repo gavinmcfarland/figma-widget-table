@@ -1,6 +1,6 @@
 var _ = require('lodash');
 const { widget } = figma
-const { Frame, Text, Ellipse, Rectangle, SVG, useSyncedState, useSyncedMap, usePropertyMenu, AutoLayout, useWidgetId, useEffect, waitForTask, Input } = widget
+const { Frame, Text, Ellipse, Rectangle, SVG, useSyncedState, useSyncedMap, usePropertyMenu, AutoLayout, useEffect, waitForTask, Input, useWidgetId } = widget
 
 
 // TODO: Add ability to show/add title
@@ -189,6 +189,7 @@ function Main() {
 
 	const [isInitialized, setIsInitialized] = useSyncedState<boolean>('init', false)
 	const [version, setVersion] = useSyncedState('version', 1)
+	const widgetId = useWidgetId()
 
 	let tableCells = useSyncedMap("tableCells")
 	let tableCols = useSyncedMap("tableCols")
@@ -674,6 +675,12 @@ function Main() {
 	}
 
 	function editCell(id, colIndex, rowIndex, cols, rows, event) {
+
+		const widgetNode = figma.getNodeById(widgetId) as WidgetNode;
+
+		let widgetX = ((figma.viewport.bounds.x + figma.viewport.bounds.width) - (50 / figma.viewport.zoom) - (300 / figma.viewport.zoom)) , widgetY = (figma.viewport.bounds.y + (50 / figma.viewport.zoom));
+
+		// (166 * 2) (300 * 2)
 
 		let {data, active} = tableCells.get(id) || { data: '', active: false }
 		let [colId, rowId] = id.split(':')
@@ -1586,7 +1593,6 @@ function Main() {
 				onClick={(event) => {
 					return new Promise((resolve) => {
 						// setStrokeWeight(2)
-
 						figma.showUI(`
 						<style>${__uiFiles__["css"]}</style>
 						<div id="actions" class="mt-xxsmall type--small">
@@ -1612,6 +1618,13 @@ function Main() {
 				const sortAscending = document.getElementById("sortAscending");
 				const sortDescending = document.getElementById("sortDescending");
 				const resize = document.getElementById("resize");
+
+				window.focus()
+
+				window.addEventListener("blur", () => {
+					console.log("blured")
+					parent.postMessage({ pluginMessage: {type: 'close-plugin'} }, '*');
+				});
 
 				deleteColumn.addEventListener("click", () => {
 					parent.postMessage({ pluginMessage: {type: 'delete-column', rowIndex: ${rowIndex}, colIndex: ${colIndex}} }, '*');
@@ -1644,7 +1657,7 @@ function Main() {
 					}
 				})
 				</script>
-			`, { title: `Column ${alphabet[colIndex]}`, width: 200, height: 311+8+8, themeColors: true });
+			`, { title: `Column ${alphabet[colIndex]}`, width: 200, height: 264+8+8, themeColors: true, position: { x: event.canvasX + (10 / figma.viewport.zoom), y: event.canvasY - (48 / figma.viewport.zoom) } });
 			// position: {x: event.canvasX - 130, y: event.canvasY + 20}
 						figma.ui.onmessage = (message) => {
 
@@ -1678,6 +1691,10 @@ function Main() {
 
 							if (message.type === 'resize-column') {
 								resizeColumn(colId, message.size)
+							}
+
+							if (message.type === 'close-plugin') {
+								figma.closePlugin()
 							}
 							// table[rowIndex][colIndex] = message
 							// updateTable(table, () => {
@@ -1734,7 +1751,7 @@ function Main() {
 		)
 	}
 
-	function RowNumber({ children, rowIndex, colIndex, id, lastRow }) {
+	function RowNumber({ children, rowIndex, colIndex, id, lastRow, event }) {
 
 		let [colId, rowId] = id.split(":")
 		let cornerRadius : any = 2
@@ -1758,7 +1775,7 @@ function Main() {
 				padding={{ "top": 3, "right": 3, "bottom": 3, "left": 3 }}
 				verticalAlignItems="center"
 				overflow="hidden"
-				onClick={() => {
+				onClick={(event) => {
 					console.log(id)
 					return new Promise((resolve) => {
 						figma.showUI(`
@@ -1779,6 +1796,13 @@ function Main() {
 				const insertBelow = document.getElementById("insertBelow");
 				const deleteRow = document.getElementById("deleteRow");
 
+				window.focus()
+
+				window.addEventListener("blur", () => {
+					console.log("blured")
+					parent.postMessage({ pluginMessage: {type: 'close-plugin'} }, '*');
+				});
+
 				deleteRow.addEventListener("click", () => {
 					parent.postMessage({ pluginMessage: {type: 'delete-row'} }, '*');
 				})
@@ -1795,7 +1819,7 @@ function Main() {
 					parent.postMessage({ pluginMessage: {type: 'move-up'} }, '*');
 				})
 				</script>
-			`, { title: `Row ${rowIndex}`, width: 200, height: 184 + 8 + 8, themeColors: true});
+			`, { title: `Row ${rowIndex}`, width: 200, height: 154 + 8 + 8, themeColors: true, position: { x: event.canvasX + (10 / figma.viewport.zoom), y: event.canvasY - (48 / figma.viewport.zoom)}});
 						figma.ui.onmessage = (message) => {
 
 							if (message.type === 'delete-row') {
@@ -1816,6 +1840,10 @@ function Main() {
 
 							if (message.type === 'move-up') {
 								moveRow(rowIndex, -1)
+							}
+
+							if (message.type === 'close-plugin') {
+								figma.closePlugin()
 							}
 
 							resolve()

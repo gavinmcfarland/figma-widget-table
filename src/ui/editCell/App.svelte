@@ -17,6 +17,8 @@
 
 	let data, colIndex, rowIndex, msg;
 
+
+
 	function setCaretPosition(ctrl, pos) {
 		// Modern browsers
 		if (ctrl.setSelectionRange) {

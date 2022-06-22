@@ -2128,9 +2128,10 @@ hr {
 	appearance: auto;
 	background-color: transparent;
     color: var(--figma-color-text);
-	padding: var(--size-xxsmall) var(--size-xsmall) ;
+	padding: 0 var(--size-xsmall) ;
     letter-spacing: var(--font-letter-spacing-pos-small);
 	position: relative;
+	line-height: 24px;
 }
 
 .customMenu__item:hover {
@@ -2150,16 +2151,19 @@ hr {
 	width: 60px;
 	border-color: transparent;
 	text-align: right;
-	padding: 8px;
+	padding: 0px 8px;
+	color: var(--figma-color-text-secondary);
 }
 
 .customMenu__item.input .input__field:hover {
 	border-color: var(--figma-color-border);
+	color: var(--figma-color-text);
 }
 
 .customMenu__item.input .input__field:active,
 .customMenu__item.input .input__field:focus {
 	border-color: var(--figma-color-bg-brand);
+	color: var(--figma-color-text);
 }
 
 .item__group {

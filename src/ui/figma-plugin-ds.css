@@ -2067,73 +2067,6 @@ key {
 	margin-right: 2px;
 }
 
-.button-group {
-	display: flex;
-	gap: 12px;
-}
-
-.button-group > * {
-	flex-grow: 1;
-	text-align: center;
-	display: block;
-	margin-bottom: 10px;
-	margin-top: 10px;
-}
-
-/* .button:hover {
-	background-color: rgba(0,0,0,0.05);
-} */
-
-
-/* Really hacky way to style column size buttons */
-
-.button--fourth {
-	background-color: var(--figma-color-bg);
-	border-width: 1px;
-	color: var(--figma-color-bg);
-	padding: 0 calc(var(--size-xsmall) + 1px) 0 calc(var(--size-xsmall) + 1px);
-	letter-spacing: var(--font-letter-spacing-pos-small);
-}
-
-/* .button--fourth.button--fourth:hover {
-	border-color: var(--figma-color-border);
-	color: var(--figma-color-border)
-} */
-
-.medium {
-	/* border-width: 2px; */
-	background-color: var(--figma-color-border);
-	border-color: var(--figma-color-border);
-	color: white;
-}
-
-.size-small > *,
-.size-medium > *,
-.size-large > * {
-	/* border-width: 1px; */
-	background-color: transparent;
-	border-color: var(--figma-color-border);
-	color: var(--figma-color-text);
-}
-
-.size-small .small,
-.size-medium .medium,
-.size-large .large {
-	/* border-width: 2px; */
-	background-color: var(--figma-color-text);
-	border-color: none;
-	color: var(--figma-color-bg);
-}
-
-.size-small .small:hover,
-.size-medium .medium:hover,
-.size-large .large:hover {
-	/* border-width: 2px; */
-	background-color: var(--figma-color-text);
-	border-color: none;
-	color: var(--figma-color-bg);
-}
-
 .secondary-text {
 	color: var(--figma-color-text-secondary);
 }
@@ -2177,4 +2110,120 @@ key {
 
 .input__field::placeholder { /* Chrome, Firefox, Opera, Safari 10.1+ */
 	color: var(--figma-color-text-secondary);
+}
+
+hr {
+	margin: 8px 0;
+}
+
+.customMenu {
+
+}
+
+.customMenu__item {
+	font-size: 12px;
+	border: none;
+	text-align: left;
+	width: 100%;
+	appearance: auto;
+	background-color: transparent;
+    color: var(--figma-color-text);
+	padding: var(--size-xxsmall) var(--size-xsmall) ;
+    letter-spacing: var(--font-letter-spacing-pos-small);
+	position: relative;
+}
+
+.customMenu__item:hover {
+	background-color: var(--figma-color-bg-hover);
+}
+
+.customMenu__item.input {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	justify-content: space-between;
+	padding-top: 0;
+	padding-bottom: 0;
+}
+
+.customMenu__item.input .input__field {
+	width: 60px;
+	border-color: transparent;
+	text-align: right;
+	padding: 8px;
+}
+
+.customMenu__item.input .input__field:hover {
+	border-color: var(--figma-color-border);
+}
+
+.customMenu__item.input .input__field:active,
+.customMenu__item.input .input__field:focus {
+	border-color: var(--figma-color-bg-brand);
+}
+
+.item__group {
+	display: flex;
+}
+.item__group > * {
+	text-align: center;
+}
+
+/* Really hacky way to style column size buttons */
+
+.button--fourth {
+	background-color: var(--figma-color-bg);
+	border-width: 1px;
+	color: var(--figma-color-bg);
+	padding: 0 calc(var(--size-xsmall) + 1px) 0 calc(var(--size-xsmall) + 1px);
+	letter-spacing: var(--font-letter-spacing-pos-small);
+}
+
+/* .button--fourth.button--fourth:hover {
+	border-color: var(--figma-color-border);
+	color: var(--figma-color-border)
+} */
+
+.medium {
+	/* border-width: 2px; */
+	background-color: var(--figma-color-border);
+	border-color: var(--figma-color-border);
+	color: white;
+}
+
+.size-small > *,
+.size-medium > *,
+.size-large > * {
+	/* border-width: 1px; */
+	background-color: transparent;
+	border-color: var(--figma-color-border);
+	color: var(--figma-color-text);
+}
+
+.size-small .small::after,
+.size-medium .medium::after,
+.size-large .large::after {
+	content: "-";
+	display: block;
+	position: absolute;
+	bottom: -2px;
+	left: 50%;
+	margin-left: -3px;
+	/* border-width: 2px; */
+	/* background-color: var(--figma-color-text); */
+	/* border-color: none; */
+	/* color: var(--figma-color-bg); */
+}
+
+/* .size-small .small:hover,
+.size-medium .medium:hover,
+.size-large .large:hover {
+	background-color: var(--figma-color-text);
+	border-color: none;
+	color: var(--figma-color-bg);
+} */
+
+.input__field::selection,
+.textarea::selection {
+	color: var(--figma-color-brand);
 }

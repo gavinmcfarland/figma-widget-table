@@ -9,7 +9,6 @@
 	let editor
 	let colElement
 	let rowElement
-	let button
 	let link = ""
 
 	const alphabet = [
@@ -108,19 +107,21 @@
 			var textareaHeight = input.clientHeight
 			link = checkIfLink(input.value)
 
-			// Checks if input express is valid before posting to figma. This means user only sees valid expression rendered while typing
-			if (input.value === "=") {
-				parent.postMessage({ pluginMessage: { type: 'data-received', data: { data: input.value, link } } }, '*');
-			}
-			else if (input.value.startsWith("=")) {
-				let evalCode = evalFunction(input.value.substring(1))
-				if (evalCode || evalCode === 0) {
-					parent.postMessage({ pluginMessage: { type: 'data-received', data: { data: input.value, link } } }, '*');
-				}
-			}
-			else {
-				parent.postMessage({ pluginMessage: { type: 'data-received', data: { data: input.value, link } } }, '*');
-			}
+			// // Checks if input express is valid before posting to figma. This means user only sees valid expression rendered while typing
+			// if (input.value === "=") {
+			// 	parent.postMessage({ pluginMessage: { type: 'data-received', data: { data: input.value, link } } }, '*');
+			// }
+			// else if (input.value.startsWith("=")) {
+			// 	let evalCode = evalFunction(input.value.substring(1))
+			// 	if (evalCode || evalCode === 0) {
+			// 		parent.postMessage({ pluginMessage: { type: 'data-received', data: { data: input.value, link } } }, '*');
+			// 	}
+			// }
+			// else {
+			// 	parent.postMessage({ pluginMessage: { type: 'data-received', data: { data: input.value, link } } }, '*');
+			// }
+
+			parent.postMessage({ pluginMessage: { type: 'data-received', data: { data: input.value, link } } }, '*');
 
 			parent.postMessage({ pluginMessage: { type: 'resize-ui', data: { textareaHeight } } }, '*');
 		})
@@ -141,19 +142,20 @@
 
 		if (message?.settings?.navigateOnEnter) {
 			input.addEventListener('keydown', function (e) {
+				link = checkIfLink(input.value)
 
 				if (e.key === 'Enter') {
 					e.preventDefault()
 				}
 
 				if ((e.key === 'Enter' && !e.shiftKey && !e.ctrlKey && !e.metaKey) || ((e.metaKey || e.ctrlKey) && e.which === 40)) {
-					parent.postMessage({ pluginMessage: { type: 'data-received', data: { data: input.value } } }, '*');
+					parent.postMessage({ pluginMessage: { type: 'data-received', data: { data: input.value, link } } }, '*');
 					parent.postMessage({ pluginMessage: { type: 'next-cell', data: { colIndex, rowIndex, link }, target: [null, 1] } }, '*');
 
 				}
 
 				if ((e.key === 'Enter' && e.shiftKey) || ((e.metaKey || e.ctrlKey) && e.which === 38)) {
-					parent.postMessage({ pluginMessage: { type: 'data-received', data: { data: input.value } } }, '*');
+					parent.postMessage({ pluginMessage: { type: 'data-received', data: { data: input.value, link } } }, '*');
 					parent.postMessage({ pluginMessage: { type: 'next-cell', data: { colIndex, rowIndex, link }, target: [null, -1] } }, '*');
 
 				}
@@ -163,13 +165,14 @@
 
 		else {
 			input.addEventListener('keydown', function (e) {
+				link = checkIfLink(input.value)
 
 				if (e.key === 'Enter') {
 					e.preventDefault()
 				}
 
 				if (((e.metaKey || e.ctrlKey) && e.which === 40)) {
-					parent.postMessage({ pluginMessage: { type: 'data-received', data: { data: input.value } } }, '*');
+					parent.postMessage({ pluginMessage: { type: 'data-received', data: { data: input.value, link } } }, '*');
 					parent.postMessage({ pluginMessage: { type: 'next-cell', data: { colIndex, rowIndex, link }, target: [null, 1] } }, '*');
 
 
@@ -177,7 +180,7 @@
 
 
 				if (((e.metaKey || e.ctrlKey) && e.which === 38)) {
-					parent.postMessage({ pluginMessage: { type: 'data-received', data: { data: input.value } } }, '*');
+					parent.postMessage({ pluginMessage: { type: 'data-received', data: { data: input.value, link } } }, '*');
 					parent.postMessage({ pluginMessage: { type: 'next-cell', data: { colIndex, rowIndex, link }, target: [null, -1] } }, '*');
 
 				}
@@ -185,11 +188,12 @@
 			});
 
 			input.addEventListener('keydown', function (e) {
+				link = checkIfLink(input.value)
 
 				// User presses enter key?
 				if (e.key === 'Enter' && !(e.ctrlKey || e.metaKey)) {
 					e.preventDefault()
-					parent.postMessage({ pluginMessage: { type: 'data-received', data: { data: input.value } } }, '*');
+					parent.postMessage({ pluginMessage: { type: 'data-received', data: { data: input.value, link } } }, '*');
 					parent.postMessage({ pluginMessage: { type: 'close-plugin' } }, '*');
 				}
 
@@ -199,16 +203,18 @@
 
 		document.addEventListener('keydown', function (e) {
 
+			link = checkIfLink(editor.value)
+
 			// If user presses tab
 			if ((e.key === "Tab" && !e.shiftKey) || ((e.metaKey || e.ctrlKey) && e.which === 39)) {
 				e.preventDefault()
 
-				parent.postMessage({ pluginMessage: { type: 'data-received', data: { data: editor.value } } }, '*');
+				parent.postMessage({ pluginMessage: { type: 'data-received', data: { data: editor.value, link } } }, '*');
 				parent.postMessage({ pluginMessage: { type: 'next-cell', data: { colIndex, rowIndex, link }, target: [1, null] } }, '*');
 
 			}
 			if (e.key === "Escape") {
-				parent.postMessage({ pluginMessage: { type: 'data-received', data: { data: editor.value } } }, '*');
+				parent.postMessage({ pluginMessage: { type: 'data-received', data: { data: editor.value, link } } }, '*');
 				parent.postMessage({ pluginMessage: { type: 'close-plugin' } }, '*');
 
 			}
@@ -216,11 +222,13 @@
 
 		document.addEventListener('keydown', function (e) {
 
+			link = checkIfLink(editor.value)
+
 			// If user presses tab and shift key
 			if ((e.key === "Tab" && e.shiftKey) || ((e.metaKey || e.ctrlKey) && e.which === 37)) {
 				e.preventDefault()
 
-				parent.postMessage({ pluginMessage: { type: 'data-received', data: { data: editor.value } } }, '*');
+				parent.postMessage({ pluginMessage: { type: 'data-received', data: { data: editor.value, link } } }, '*');
 				parent.postMessage({ pluginMessage: { type: 'next-cell', data: { colIndex, rowIndex, link }, target: [-1, null] } }, '*');
 
 			}

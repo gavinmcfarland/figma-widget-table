@@ -187,6 +187,9 @@ function Main() {
 		return uniqueId
 	}
 
+	const [isInitialized, setIsInitialized] = useSyncedState<boolean>('init', false)
+	const [version, setVersion] = useSyncedState('version', 1)
+
 	let tableCells = useSyncedMap("tableCells")
 	let tableCols = useSyncedMap("tableCols")
 	let tableRows = useSyncedMap("tableRows")
@@ -248,7 +251,7 @@ function Main() {
 
 	let showCellsBeingEdited = true
 
-	const [isInitialized, setIsInitialized] = useSyncedState<boolean>('init', false)
+
 
 
 	function putEntriesIntoArray(map) {
@@ -270,19 +273,6 @@ function Main() {
 			return item
 		})
 		return entries
-	}
-
-	function manageArray(array) {
-		var newArray;
-		if (array.length === 0) {
-			newArray = numToIndices(3).map((item, i) => {
-				return 'd' + genRandomId(i)
-			})
-		}
-		else {
-			newArray = array
-		}
-		return newArray
 	}
 
 	function addActiveCell(id) {
@@ -356,6 +346,31 @@ function Main() {
 		}
 	}
 
+	function updateColumnSizeData() {
+		// Migrate changes to data on render
+
+		// Get cols
+		let cols = tableCols.entries()
+
+		// Loop table cols
+		for (let i = 0; i < cols.length; i++) {
+			let [id, data] = cols[i]
+
+			if (data.size === "small") {
+				data.size = 144;
+			}
+			if (data.size === "medium") {
+				data.size = 240;
+			}
+			if (data.size === "large") {
+				data.size = 480;
+			}
+
+			tableCols.set(id, data)
+		}
+
+	}
+
 
 
 	useEffect(() => {
@@ -378,6 +393,11 @@ function Main() {
 			})
 
 			setIsInitialized(true)
+		}
+		if (version < 2) {
+			updateColumnSizeData()
+			setVersion(2)
+			console.log("Column size data updated")
 		}
 	})
 
@@ -489,17 +509,17 @@ function Main() {
 
 
 	function setWidth(col) {
-		var base = 96
-		var width = base * 2.5
+		var width = col?.size
 
+		// This is needed temporarily because widget needs to render once before recieveing updated state
 		if (col?.size === "small") {
-			width = base * 1.5
+			width = 144;
 		}
 		if (col?.size === "medium") {
-			width = base * 2.5
+			width = 240;
 		}
 		if (col?.size === "large") {
-			width = base * 5
+			width = 480;
 		}
 
 		return width
@@ -507,6 +527,7 @@ function Main() {
 
 	function resizeColumn(colIndex, size) {
 		var colData = tableCols.get(colIndex)
+		size = convertToNumber(size)
 		tableCols.set(colIndex, { ...colData, size })
 	}
 
@@ -547,20 +568,23 @@ function Main() {
 
 		var virtualEntries = tableCols.entries()
 
-		// 1. Sort the entries in order
-		virtualEntries.sort((a, b) => {
-			if (a[1].order > b[1].order) return 1;
-			if (b[1].order > a[1].order) return -1;
+		if ((colIndex + position) > 0 && (colIndex + position) < virtualEntries.length) {
 
-			return 0;
-		})
+			// 1. Sort the entries in order
+			virtualEntries.sort((a, b) => {
+				if (a[1].order > b[1].order) return 1;
+				if (b[1].order > a[1].order) return -1;
 
-		virtualEntries = move(virtualEntries, colIndex, colIndex + position)
+				return 0;
+			})
 
-		// 4. Reset order on entries now that new column has been created
-		virtualEntries.map((entry, i) => {
-			tableCols.set(entry[0], { ...entry[1], order: i, size: entry[1].size })
-		})
+			virtualEntries = move(virtualEntries, colIndex, colIndex + position)
+
+			// 4. Reset order on entries now that new column has been created
+			virtualEntries.map((entry, i) => {
+				tableCols.set(entry[0], { ...entry[1], order: i, size: entry[1].size })
+			})
+		}
 
 	}
 
@@ -573,20 +597,22 @@ function Main() {
 
 		var virtualEntries = tableRows.entries()
 
-		// 1. Sort the entries in order
-		virtualEntries.sort((a, b) => {
-			if (a[1].order > b[1].order) return 1;
-			if (b[1].order > a[1].order) return -1;
+		if ((rowIndex + position) > 0 && (rowIndex + position) < virtualEntries.length) {
+			// 1. Sort the entries in order
+			virtualEntries.sort((a, b) => {
+				if (a[1].order > b[1].order) return 1;
+				if (b[1].order > a[1].order) return -1;
 
-			return 0;
-		})
+				return 0;
+			})
 
-		virtualEntries = move(virtualEntries, rowIndex, rowIndex + position)
+			virtualEntries = move(virtualEntries, rowIndex, rowIndex + position)
 
-		// 4. Reset order on entries now that new column has been created
-		virtualEntries.map((entry, i) => {
-			tableRows.set(entry[0], { ...entry[1], order: i, size: entry[1].size })
-		})
+			// 4. Reset order on entries now that new column has been created
+			virtualEntries.map((entry, i) => {
+				tableRows.set(entry[0], { ...entry[1], order: i, size: entry[1].size })
+			})
+		}
 
 	}
 
@@ -763,9 +789,9 @@ function Main() {
 
 				}
 
-				if (data === "=") {
-					data = ""
-				}
+				// if (data === "=") {
+				// 	data = ""
+				// }
 
 				tableCells.set(currentCellId, { data, active, link})
 
@@ -910,12 +936,20 @@ function Main() {
 
 			if(a[1].data === b[1].data) return 0;
 
+			// // Reverse the sorting
+			// if (sortDescending) {
+			// 	return  evalData(a[1].data) > evalData(b[1].data) ? -1 : 1;
+			// }
+			// else {
+			// 	return evalData(a[1].data) < evalData(b[1].data) ? -1 : 1;
+			// }
+
 			// Reverse the sorting
 			if (sortDescending) {
-				return  evalData(a[1].data) > evalData(b[1].data) ? -1 : 1;
+				return  a[1].data > b[1].data ? -1 : 1;
 			}
 			else {
-				return evalData(a[1].data) < evalData(b[1].data) ? -1 : 1;
+				return a[1].data < b[1].data ? -1 : 1;
 			}
 
 		})
@@ -1115,7 +1149,7 @@ function Main() {
 						figma.showUI(`
 					<style>${__uiFiles__["css"]}</style>
 					${__uiFiles__["settings"]}
-          `, { title: "Settings", width: 300, height: 332, themeColors: true });
+          `, { title: "Settings", width: 300, height: 304+16+16, themeColors: true });
 
 						figma.ui.postMessage({ type: "post-settings", settings, widgetSettings, widgetTheme, widgetFirstRowAsHeader })
 
@@ -1194,7 +1228,7 @@ function Main() {
 					figma.showUI(`
 					<style>${__uiFiles__["css"]}</style>
 					${__uiFiles__["import"]}
-          `, { title: "Import", width: 340, height: 292, themeColors: true });
+          `, { title: "Import", width: 340, height: 252 + 16 + 16, themeColors: true });
 
 					// if (dataEndpoint) {
 						figma.ui.postMessage({ dataEndpoint })
@@ -1387,7 +1421,8 @@ function Main() {
 			hrefBorder = "underline";
 		}
 
-		let data = evalData(cell.data)
+		// let data = evalData(cell.data)
+		let data = cell.data
 
 
 
@@ -1468,7 +1503,8 @@ function Main() {
 		let href = "";
 		let hrefBorder = "none";
 
-		let data = evalData(cell.data)
+		// let data = evalData(cell.data)
+		let data = cell.data
 
 		if (cell.link) {
 			href = cell.link
@@ -1553,23 +1589,19 @@ function Main() {
 
 						figma.showUI(`
 						<style>${__uiFiles__["css"]}</style>
-						<div id="actions" class="m-xsmall type--small">
-							<button class="button button--secondary mb-xxsmall" style="width: 100%" id="insertToLeft">Insert to Left</button>
-							<button class="button button--secondary mb-xsmall" style="width: 100%" href="#" id="insertToRight">Insert to Right</button>
+						<div id="actions" class="mt-xxsmall type--small">
+							<button class="customMenu__item" id="insertToLeft">Insert to Left</button>
+							<button class="customMenu__item" id="insertToRight">Insert to Right</button>
 							<hr/>
-							<button class="button button--secondary mb-xxsmall mt-xsmall" style="width: 100%" href="#" id="moveToLeft">Move to Left</button>
-							<button class="button button--secondary mb-xsmall" style="width: 100%" href="#" id="moveToRight">Move to Right</button>
+							<button class="customMenu__item" id="moveToLeft">Move to Left</button>
+							<button class="customMenu__item" id="moveToRight">Move to Right</button>
 							<hr/>
-							<button class="button button--secondary mt-xsmall mb-xxsmall" style="width: 100%" href="#" id="sortAscending">Sort Table A-Z</button>
-							<button class="button button--secondary mb-xsmall" style="width: 100%" href="#" id="sortDescending">Sort Table Z-A</button>
+							<button class="customMenu__item" id="sortAscending">Sort Table A-Z</button>
+							<button class="customMenu__item" id="sortDescending">Sort Table Z-A</button>
 							<hr/>
-							<div class="button-group size-${col.size}">
-							<button class="button button--fourth mb-xsmall small" href="#" id="resizeSmall">S</button>
-							<button class="button button--fourth mb-xsmall medium" href="#" id="resizeMedium">M</button>
-							<button class="button button--fourth mb-xsmall large" href="#" id="resizeLarge">L</button>
-							</div>
+							<label class="customMenu__item input">Column Size <input id="resize" type="input" class="input__field" value="${width}"/></label>
 							<hr/>
-							<button class="button button--secondary mt-xsmall" style="width: 100%" href="#" id="deleteColumn">Delete Column</button>
+							<button class="customMenu__item" id="deleteColumn">Delete Column</button>
 						</div>
 				<script>
 				const actions = document.getElementById("actions");
@@ -1600,17 +1632,17 @@ function Main() {
 				sortDescending.addEventListener("click", () => {
 					parent.postMessage({ pluginMessage: {type: 'sort-descending'} }, '*');
 				})
-				resizeSmall.addEventListener("click", () => {
-					parent.postMessage({ pluginMessage: {type: 'resize-column', size: 'small'} }, '*');
-				})
-				resizeMedium.addEventListener("click", () => {
-					parent.postMessage({ pluginMessage: {type: 'resize-column', size: 'medium'} }, '*');
-				})
-				resizeLarge.addEventListener("click", () => {
-					parent.postMessage({ pluginMessage: {type: 'resize-column', size: 'large'} }, '*');
+				resize.addEventListener("focus", () => {
+					resize.select();
+				});
+				resize.addEventListener("keydown", (e) => {
+
+					if (e.key === 'Enter'){
+						parent.postMessage({ pluginMessage: {type: 'resize-column', size: resize.value} }, '*');
+					}
 				})
 				</script>
-			`, { title: `Column ${alphabet[colIndex]}`, width: 200, height: 444, themeColors: true });
+			`, { title: `Column ${alphabet[colIndex]}`, width: 200, height: 311+8+8, themeColors: true });
 			// position: {x: event.canvasX - 130, y: event.canvasY + 20}
 						figma.ui.onmessage = (message) => {
 
@@ -1700,9 +1732,20 @@ function Main() {
 		)
 	}
 
-	function RowNumber({ children, rowIndex, colIndex, id }) {
+	function RowNumber({ children, rowIndex, colIndex, id, lastRow }) {
 
 		let [colId, rowId] = id.split(":")
+		let cornerRadius : any = 2
+
+		if (lastRow) {
+			cornerRadius = {
+				topLeft: 2,
+				topRight: 2,
+				bottomLeft: 5,
+				bottomRight: 2
+			  }
+		}
+
 		return (
 			<AutoLayout width={46}
 				height="fill-parent"
@@ -1719,14 +1762,14 @@ function Main() {
 						figma.showUI(`
 						<style>${__uiFiles__["css"]}</style>
 
-						<div id="actions" class="m-xsmall type--small">
-							<button class="button button--secondary mb-xxsmall" style="width: 100%" id="insertAbove">Insert Above</button>
-							<button class="button button--secondary mb-xsmall" style="width: 100%" id="insertBelow">Insert Below</button>
+						<div id="actions" class="mt-xxsmall type--small">
+							<button class="customMenu__item" id="insertAbove">Insert Above</button>
+							<button class="customMenu__item" id="insertBelow">Insert Below</button>
 							<hr/>
-							<button class="button button--secondary mb-xxsmall mt-xsmall" style="width: 100%" id="moveUp">Move Up</button>
-							<button class="button button--secondary mb-xsmall" style="width: 100%" id="moveDown">Move Down</button>
+							<button class="customMenu__item" id="moveUp">Move Up</button>
+							<button class="customMenu__item" id="moveDown">Move Down</button>
 							<hr/>
-							<button class="button button--secondary mt-xsmall" style="width: 100%" id="deleteRow">Delete Row</button>
+							<button class="customMenu__item" id="deleteRow">Delete Row</button>
 						</div>
 				<script>
 				const actions = document.getElementById("actions");
@@ -1750,7 +1793,7 @@ function Main() {
 					parent.postMessage({ pluginMessage: {type: 'move-up'} }, '*');
 				})
 				</script>
-			`, { title: `Row ${rowIndex}`, width: 200, height: 274, themeColors: true});
+			`, { title: `Row ${rowIndex}`, width: 200, height: 184 + 8 + 8, themeColors: true});
 						figma.ui.onmessage = (message) => {
 
 							if (message.type === 'delete-row') {
@@ -1780,7 +1823,7 @@ function Main() {
 			>
 				<AutoLayout
 						name="Hover"
-						cornerRadius={2}
+						cornerRadius={cornerRadius}
 						overflow="visible"
 						hoverStyle={{
 							fill: theme.colorBgTertiary,
@@ -1959,7 +2002,7 @@ function Main() {
 									return <EmptyRowNumber key={cellId} ></EmptyRowNumber>
 								}
 								else if (colIndex === 0) {
-									return <RowNumber key={cellId}  id={cellId} rowIndex={rowIndex} colIndex={colIndex}>{cell}</RowNumber>
+									return <RowNumber key={cellId}  id={cellId} rowIndex={rowIndex} colIndex={colIndex} lastRow={lastRow}>{cell}</RowNumber>
 								}
 								else {
 									if (rowIndex === 0) {

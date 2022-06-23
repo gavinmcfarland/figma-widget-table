@@ -1,3 +1,5 @@
+import { initialize } from "esbuild";
+
 var _ = require('lodash');
 const { widget } = figma
 const { Frame, Text, Ellipse, Rectangle, SVG, useSyncedState, useSyncedMap, usePropertyMenu, AutoLayout, useEffect, waitForTask, Input, useWidgetId } = widget
@@ -203,8 +205,28 @@ function Main() {
 	let [widgetName, setWidgetName] = useSyncedState("widgetName", "")
 	let [widgetFirstRowAsHeader, setWidgetFirstRowAsHeader] = useSyncedState("widgetFirstRowAsHeader", true);
 
+	function replacer(key, value) {
+		if(value instanceof Map) {
+		  return {
+			dataType: 'Map',
+			value: Array.from(value.entries()), // or with spread: value: [...value]
+		  };
+		} else {
+		  return value;
+		}
+	  }
+	  function reviver(key, value) {
+		if(typeof value === 'object' && value !== null) {
+		  if (value.dataType === 'Map') {
+			return new Map(value.value);
+		  }
+		}
+		return value;
+	  }
+
 	// Check activeUsers still exist
 	useEffect(() => {
+
 		// waitForTask(new Promise(resolve => {
 
 
@@ -498,6 +520,42 @@ function Main() {
 
 	let cols = putEntriesIntoArray(tableCols).length === 0 ? ['1', '2', '3'] : putEntriesIntoArray(tableCols)
 	let rows = putEntriesIntoArray(tableRows).length === 0 ? ['1', '2', '3'] : putEntriesIntoArray(tableRows)
+
+
+	useEffect(() => {
+		// Experimenting with exporting data from table
+		if (isInitialized) {
+			function exportToMap(rows, cols) {
+				var map = new Map()
+				for (var i = 0; i < rows.length; i++) {
+					var rowId = rows[i]
+					if (i > 0) {
+						for (let x = 0; x < cols.length; x++) {
+							if (x > 0) {
+								var colId = cols[x]
+								var cellData = tableCells.get(`${colId}:${rowId}`) || { data: '' }
+								map.set(`${alphabet[i]}:${x}`, cellData)
+							}
+						}
+					}
+				}
+				return map
+			}
+
+			let widgetNode = figma.getNodeById(widgetId)
+			let exportAsMap = exportToMap(rows, cols)
+
+			widgetNode.setPluginData("tableData", JSON.stringify(exportAsMap, replacer));
+
+			let selectedWidget = figma.currentPage.selection[0]
+
+			let tableData = JSON.parse(selectedWidget.getPluginData("tableData"), reviver)
+
+			console.log(tableData.get("C:1"));
+		}
+	})
+
+
 
 
 	// useEffect(() => {

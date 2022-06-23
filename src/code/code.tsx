@@ -20,6 +20,7 @@ const { Frame, Text, Ellipse, Rectangle, SVG, useSyncedState, useSyncedMap, useP
 // TODO: See if there's a way to enable refocusing input when UI is moved DISCARD
 // TODO: Add setting to change theme of widget
 // TODO: Customise border radius of last cell DONE
+// TODO: Prevent deleting last row or column
 
 function evalFunction(js) {
 

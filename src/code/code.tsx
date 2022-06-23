@@ -1325,8 +1325,13 @@ function Main() {
 
 									// Only keep column size if dataEndpoint as googleSheets has been set or if CSV file is being used
 
-									var size = origDataEndpoint?.api === "googleSheets" || dataEndpoint?.api === "file" ? entry && entry[1]?.size : undefined
+									var size = origDataEndpoint?.api === "googleSheets" || dataEndpoint?.api === "file" ? entry && entry[1]?.size : 240
 									// var size = entry && entry[1]?.size
+									// Quick fix
+									if (!size) {
+										size = 240
+									}
+
 									tableCols.set(`${colId}`, { size, order: c })
 								}
 

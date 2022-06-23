@@ -383,11 +383,14 @@ function Main() {
 			if (data.size === "small") {
 				data.size = 144;
 			}
-			if (data.size === "medium") {
+			else if (data.size === "medium") {
 				data.size = 240;
 			}
-			if (data.size === "large") {
+			else if (data.size === "large") {
 				data.size = 480;
+			}
+			else {
+				data.size = 240
 			}
 
 			tableCols.set(id, data)
@@ -409,7 +412,7 @@ function Main() {
 			// 	setWidgetTheme("dark")
 			// }
 			numToIndices(3).map((item, i) => {
-				tableCols.set(genRandomId(i), { order: i, size: "medium" })
+				tableCols.set(genRandomId(i), { order: i, size: 240 })
 			})
 
 			numToIndices(4).map((item, i) => {
@@ -547,9 +550,7 @@ function Main() {
 
 			widgetNode.setPluginData("tableData", JSON.stringify(exportAsMap, replacer));
 
-			let selectedWidget = figma.currentPage.selection[0]
-
-			let tableData = JSON.parse(selectedWidget.getPluginData("tableData"), reviver)
+			let tableData = JSON.parse(widgetNode.getPluginData("tableData"), reviver)
 
 			console.log(tableData.get("C:1"));
 		}
@@ -606,11 +607,11 @@ function Main() {
 		})
 
 		// 2. Set new col entry
-		tableCols.set(uniqueId, { order: '', size: 'medium' })
+		tableCols.set(uniqueId, { order: '', size: 240 })
 
 
 		// 2. Splice new entry into virtualEntries
-		virtualEntries.splice(colIndex + position, 0, [uniqueId, { order: '', size: 'medium' }])
+		virtualEntries.splice(colIndex + position, 0, [uniqueId, { order: '', size: 240 }])
 
 		// 4. Reset order on entries now that new column has been created
 		virtualEntries.map((entry, i) => {
@@ -1345,7 +1346,7 @@ function Main() {
 
 								// This adds the table letters and numbers
 								numToIndices(1).map((item, i) => {
-									tableCols.set(genRandomId(i), { order: i })
+									tableCols.set(genRandomId(i), { order: i, size: 240 })
 									tableRows.set(genRandomId(i), { order: i })
 								})
 
@@ -1381,10 +1382,17 @@ function Main() {
 									// Just merge size for now as not sure if we want order to be preserved
 									var entry = origTableCols[c]
 
-									// Only keep column size if dataEndpoint as googleSheets has been set or if CSV file is being used
 
-									var size = origDataEndpoint?.api === "googleSheets" || dataEndpoint?.api === "file" ? entry && entry[1]?.size : undefined
+									// Only keep column size if dataEndpoint as googleSheets has been set or if CSV file is being used
+									var size = origDataEndpoint?.api === "googleSheets" || dataEndpoint?.api === "file" ? entry && entry[1]?.size : 240
+
 									// var size = entry && entry[1]?.size
+
+									// Quick fix
+									if (!size) {
+										size = 240
+									}
+
 									tableCols.set(`${colId}`, { size, order: c })
 								}
 

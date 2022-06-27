@@ -677,9 +677,10 @@ function Main() {
 
 	function editCell(id, colIndex, rowIndex, cols, rows, event) {
 
-		const widgetNode = figma.getNodeById(widgetId) as WidgetNode;
+		// const widgetNode = figma.getNodeById(widgetId) as WidgetNode;
 
-		let widgetX = ((figma.viewport.bounds.x + figma.viewport.bounds.width) - (50 / figma.viewport.zoom) - (300 / figma.viewport.zoom)) , widgetY = (figma.viewport.bounds.y + (50 / figma.viewport.zoom));
+		// let widgetX = ((figma.viewport.bounds.x + figma.viewport.bounds.width) - (50 / figma.viewport.zoom) - (300 / figma.viewport.zoom)) , widgetY = (figma.viewport.bounds.y + (50 / figma.viewport.zoom));
+
 
 		// (166 * 2) (300 * 2)
 

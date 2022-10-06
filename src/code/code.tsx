@@ -248,8 +248,8 @@ function Main() {
 	})
 
 
-	// let [widgetColor, setWidgetColor] = useSyncedState("widgetColor", "#9747FF")
 	let [widgetColor, setWidgetColor] = useSyncedState("widgetColor", "#9747FF")
+	let [widgetScale, setWidgetScale] = useSyncedState("widgetScale", "small")
 
 	let showCellsBeingEdited = true
 
@@ -493,6 +493,33 @@ function Main() {
 			shadowBorderLeft: [{ "type": "inner-shadow", "color": { "r": 75 / 255, "g": 75 / 255, "b": 75 / 255, "a": 1 }, "offset": { "x": 1, "y": 0 }, "spread": 0, "visible": true, "blendMode": "normal", "showShadowBehindNode": false, "blur": 0 }],
 			shadowBorderBottom: [{ "type": "inner-shadow", "color": { "r": 75 / 255, "g": 75 / 255, "b": 75 / 255, "a": 1 }, "offset": { "x": 0, "y": -1 }, "spread": 0, "visible": true, "blendMode": "normal", "showShadowBehindNode": false, "blur": 0 }]
 		}
+	}
+
+	// if (widgetScale === "small") {
+		theme.textSize = 12
+		theme.paddingScaleX = 1
+		theme.paddingScaleY = 1
+		theme.rowNumberWidth = 46
+		theme.columnLetterHeight = 32 - 6
+		theme.columnWidthMultipler = 1
+	// }
+
+	if (widgetScale === "medium") {
+		theme.textSize = 18
+		theme.paddingScaleX = 1.5
+		theme.paddingScaleY = 1.2
+		theme.rowNumberWidth = 62
+		theme.columnLetterHeight = 46 - 6
+		theme.columnWidthMultipler = 1.5
+	}
+
+	if (widgetScale === "large") {
+		theme.textSize = 30
+		theme.paddingScaleX = 2
+		theme.paddingScaleY = 1.5
+		theme.rowNumberWidth = 90
+		theme.columnLetterHeight = 48 - 6
+		theme.columnWidthMultipler = 2.4
 	}
 
 
@@ -1102,6 +1129,32 @@ function Main() {
 
 			},
 			{
+				itemType: 'separator'
+			},
+			{
+				itemType: 'dropdown',
+        		propertyName: 'widgetScale',
+        		tooltip: 'Font size',
+				options: [
+					{
+						option: "small",
+						label: "Small"
+					},
+					{
+						option: "medium",
+						label: "Medium"
+					},
+					{
+						option: "large",
+						label: "Large"
+					}
+				],
+				selectedOption: widgetScale
+			},
+			{
+				itemType: 'separator'
+			},
+			{
 				tooltip: 'Import',
 				propertyName: 'import',
 				itemType: 'action',
@@ -1125,6 +1178,10 @@ function Main() {
 
 			if (propertyName === "colorSelector") {
 				setWidgetColor(propertyValue)
+			}
+
+			if (propertyName === "widgetScale") {
+				setWidgetScale(propertyValue)
 			}
 			// if (propertyName === "colorGrey") setWidgetColor("#545454")
 			// if (propertyName === "colorRed") setWidgetColor("#E05A33")
@@ -1377,9 +1434,9 @@ function Main() {
 			name="Title"
 			fill={theme.colorBgSecondary}
 			padding={{
-			  top: 5,
+			  top: 5 * theme.paddingScaleY,
 			  right: 0,
-			  bottom: 2,
+			  bottom: 2 * theme.paddingScaleX,
 			  left: 0,
 			}}
 			width="fill-parent"
@@ -1396,7 +1453,7 @@ function Main() {
 
 
 				}}
-				fontSize={12}
+				fontSize={theme.textSize}
 				horizontalAlignText="center"
 				fill={theme.colorTextTertiary}
 				fontWeight={600}
@@ -1412,7 +1469,7 @@ function Main() {
 
 	function Cell({ children, id, cell, rowIndex, colIndex, col, cornerRadius }) {
 
-		var width = setWidth(col)
+		var width = setWidth(col) * theme.columnWidthMultipler
 
 
 		var strokePaint = [];
@@ -1467,7 +1524,7 @@ function Main() {
 					name="Content"
 					x={1}
 					blendMode="pass-through"
-					padding={{ "top": 14, "right": 14, "bottom": 14, "left": 13 }}
+					padding={{ "top": 14 * theme.paddingScaleY, "right": 1, "bottom": 14 * theme.paddingScaleY, "left": (14 * theme.paddingScaleX) - 1 }}
 					spacing={10}
 					overflow="visible">
 					<Text key={id} width="fill-parent" href={href}
@@ -1476,6 +1533,7 @@ function Main() {
 						fill={theme.colorText}
 						fontFamily="Inter"
 						fontWeight={400}
+						fontSize={theme.textSize * 1.333}
 						verticalAlignText="center"
 						textDecoration={hrefBorder}>
 						{data}
@@ -1505,7 +1563,7 @@ function Main() {
 		var strokePaint = [];
 		var strokeWidth = 0
 
-		var width = setWidth(col)
+		var width = setWidth(col) * theme.columnWidthMultipler
 
 		let activeCell = activeCells.get(id)
 
@@ -1558,7 +1616,7 @@ function Main() {
 					name="Content"
 					x={1}
 					blendMode="pass-through"
-					padding={{ "top": 14, "right": 14, "bottom": 14, "left": 13 }}
+					padding={{ "top": 14 * theme.paddingScaleY, "right": 14 * theme.paddingScaleX, "bottom": 14 * theme.paddingScaleY, "left": (14 * theme.paddingScaleX) - 1 }}
 					spacing={10}
 					stroke={strokePaint}
 					strokeWidth={strokeWidth}
@@ -1571,6 +1629,7 @@ function Main() {
 						fill={theme.colorText}
 						fontFamily="Inter"
 						fontWeight={600}
+						fontSize={theme.textSize * 1.333}
 						verticalAlignText="center"
 						textDecoration={hrefBorder}>
 						{data}
@@ -1586,7 +1645,7 @@ function Main() {
 	function ColumnLetter({ children, rowIndex, colIndex, id, col }) {
 		let [colId, rowId] = id.split(":")
 
-		var width = setWidth(col)
+		var width = setWidth(col) * theme.columnWidthMultipler
 
 		return (
 			<AutoLayout width={width}
@@ -1732,7 +1791,7 @@ function Main() {
 
 				 <AutoLayout
 				 width="fill-parent"
-				 padding={{ "top": 3, "right": 3, "bottom": 3, "left": 3 }}
+				 padding={{ "top": 4 - 1, "right": 4 - 1, "bottom": 4 - 1, "left": 4 - 1 }}
 				 >
 					 <AutoLayout
 						name="Hover"
@@ -1744,6 +1803,7 @@ function Main() {
 						width="fill-parent"
 						horizontalAlignItems="center"
 						verticalAlignItems="center"
+						height={theme.columnLetterHeight}
 						>
 							<Text width="fill-parent"
 							name="Column Letter"
@@ -1752,7 +1812,7 @@ function Main() {
 							y={4}
 							blendMode="pass-through"
 							fill={theme.colorTextTertiary}
-							fontSize={12}
+							fontSize={theme.textSize}
 							fontFamily="Inter"
 							fontWeight={600}
 							horizontalAlignText="center"
@@ -1781,13 +1841,13 @@ function Main() {
 		}
 
 		return (
-			<AutoLayout width={46}
+			<AutoLayout width={theme.rowNumberWidth}
 				height="fill-parent"
 				name="RowNumber"
 				blendMode="pass-through"
 				fill={theme.colorBgSecondary}
 				cornerRadius={{ "topLeft": 0, "topRight": 0, "bottomLeft": 0, "bottomRight": 0 }}
-				padding={{ "top": 3, "right": 3, "bottom": 3, "left": 3 }}
+				padding={{ "top": 4 - 1, "right": 4 - 1, "bottom": 4 - 1, "left": 4 - 1 }}
 				verticalAlignItems="center"
 				overflow="hidden"
 				onClick={(event) => {
@@ -1890,7 +1950,7 @@ function Main() {
 					y={16}
 					blendMode="pass-through"
 					fill={theme.colorTextTertiary}
-					fontSize={12}
+					fontSize={theme.textSize}
 					fontFamily="Inter"
 					fontWeight={600}
 					horizontalAlignText="center"
@@ -1904,13 +1964,13 @@ function Main() {
 
 	function EmptyRowNumber({ children }) {
 		return (
-			<AutoLayout width={46}
+			<AutoLayout width={theme.rowNumberWidth}
 				height="fill-parent"
 				name="RowNumber"
 				blendMode="pass-through"
 				fill={theme.colorBgSecondary}
 				cornerRadius={{ "topLeft": 0, "topRight": 0, "bottomLeft": 0, "bottomRight": 0 }}
-				padding={{ "top": 4, "right": 4, "bottom": 4, "left": 4 }}
+				padding={{ "top": 4 - 1, "right": 4 - 1, "bottom": 4 - 1, "left": 4 - 1 }}
 				verticalAlignItems="center"
 				overflow="hidden"
 			>
@@ -1920,7 +1980,7 @@ function Main() {
 					y={16}
 					blendMode="pass-through"
 					fill={theme.colorText}
-					fontSize={12}
+					fontSize={theme.textSize}
 					fontFamily="Inter"
 					fontWeight={600}
 					horizontalAlignText="center"

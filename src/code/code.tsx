@@ -403,7 +403,7 @@ function Main() {
 		}
 	})
 
-	let theme : any;
+	let theme : any = {};
 
 	if (widgetTheme === "light") {
 		theme = {
@@ -495,14 +495,14 @@ function Main() {
 		}
 	}
 
-	// if (widgetScale === "small") {
+	if (widgetScale === "small") {
 		theme.textSize = 12
 		theme.paddingScaleX = 1
 		theme.paddingScaleY = 1
 		theme.rowNumberWidth = 46
 		theme.columnLetterHeight = 32 - 6
 		theme.columnWidthMultipler = 1
-	// }
+	}
 
 	if (widgetScale === "medium") {
 		theme.textSize = 18

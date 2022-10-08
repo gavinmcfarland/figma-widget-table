@@ -373,36 +373,6 @@ function Main() {
 
 	}
 
-
-
-	useEffect(() => {
-		if (!isInitialized) {
-
-
-			setTheme(figma.currentPage.backgrounds[0].color)
-
-			// let color = {r: 0.11764705926179886, g: 0.11764705926179886, b: 0.11764705926179886}
-			// if (JSON.stringify(figma.currentPage.backgrounds[0].color) === JSON.stringify(color)) {
-			// 	console.log("dark theme")
-			// 	setWidgetTheme("dark")
-			// }
-			numToIndices(3).map((item, i) => {
-				tableCols.set(genRandomId(i), { order: i, size: "medium" })
-			})
-
-			numToIndices(4).map((item, i) => {
-				tableRows.set(genRandomId(i), { order: i})
-			})
-
-			setIsInitialized(true)
-		}
-		if (version < 2) {
-			updateColumnSizeData()
-			setVersion(2)
-			console.log("Column size data updated")
-		}
-	})
-
 	let theme : any = {};
 
 	if (widgetTheme === "light") {
@@ -495,14 +465,14 @@ function Main() {
 		}
 	}
 
-	if (widgetScale === "small") {
+	// if (widgetScale === "small") {
 		theme.textSize = 12
 		theme.paddingScaleX = 1
 		theme.paddingScaleY = 1
 		theme.rowNumberWidth = 46
 		theme.columnLetterHeight = 32 - 6
-		theme.columnWidthMultipler = 1
-	}
+		theme.columnWidthMultiplier = 1
+	// }
 
 	if (widgetScale === "medium") {
 		theme.textSize = 18
@@ -510,7 +480,7 @@ function Main() {
 		theme.paddingScaleY = 1.2
 		theme.rowNumberWidth = 62
 		theme.columnLetterHeight = 46 - 6
-		theme.columnWidthMultipler = 1.5
+		theme.columnWidthMultiplier = 1.5
 	}
 
 	if (widgetScale === "large") {
@@ -519,8 +489,35 @@ function Main() {
 		theme.paddingScaleY = 1.5
 		theme.rowNumberWidth = 90
 		theme.columnLetterHeight = 48 - 6
-		theme.columnWidthMultipler = 2.4
+		theme.columnWidthMultiplier = 2.4
 	}
+
+	useEffect(() => {
+		if (!isInitialized) {
+
+
+			setTheme(figma.currentPage.backgrounds[0].color)
+
+			// let color = {r: 0.11764705926179886, g: 0.11764705926179886, b: 0.11764705926179886}
+			// if (JSON.stringify(figma.currentPage.backgrounds[0].color) === JSON.stringify(color)) {
+			// 	console.log("dark theme")
+			// 	setWidgetTheme("dark")
+			// }
+			numToIndices(3).map((item, i) => {
+				tableCols.set(genRandomId(i), { order: i, size: "medium" })
+			})
+
+			numToIndices(4).map((item, i) => {
+				tableRows.set(genRandomId(i), { order: i})
+			})
+
+			setIsInitialized(true)
+		}
+		if (version < 2) {
+			updateColumnSizeData()
+			setVersion(2)
+		}
+	})
 
 
 	let cols = putEntriesIntoArray(tableCols).length === 0 ? ['1', '2', '3'] : putEntriesIntoArray(tableCols)
@@ -537,8 +534,8 @@ function Main() {
 	// })
 
 
-	function setWidth(col) {
-		var width = col?.size
+	function setWidth(col, theme) {
+		var width = col?.size || 144
 
 		// This is needed temporarily because widget needs to render once before recieveing updated state
 		if (col?.size === "small") {
@@ -1434,9 +1431,9 @@ function Main() {
 			name="Title"
 			fill={theme.colorBgSecondary}
 			padding={{
-			  top: 5 * theme.paddingScaleY,
+			  top: 8 * theme.paddingScaleY,
 			  right: 0,
-			  bottom: 2 * theme.paddingScaleX,
+			  bottom: 4 * theme.paddingScaleY,
 			  left: 0,
 			}}
 			width="fill-parent"
@@ -1457,7 +1454,7 @@ function Main() {
 				horizontalAlignText="center"
 				fill={theme.colorTextTertiary}
 				fontWeight={600}
-				lineHeight={20}
+				lineHeight={20 * theme.paddingScaleY}
 				// inputFrameProps={{
 				// }}
 				width={260}
@@ -1469,7 +1466,8 @@ function Main() {
 
 	function Cell({ children, id, cell, rowIndex, colIndex, col, cornerRadius }) {
 
-		var width = setWidth(col) * theme.columnWidthMultipler
+		var width = setWidth(col, theme)
+		var widthRendered = width * theme.columnWidthMultiplier
 
 
 		var strokePaint = [];
@@ -1499,7 +1497,7 @@ function Main() {
 
 
 		return (
-			<AutoLayout width={width}
+			<AutoLayout width={widthRendered}
 
 				height="fill-parent"
 				name="DefaultCell"
@@ -1563,7 +1561,8 @@ function Main() {
 		var strokePaint = [];
 		var strokeWidth = 0
 
-		var width = setWidth(col) * theme.columnWidthMultipler
+		var width = setWidth(col, theme)
+		var widthRendered = width * theme.columnWidthMultiplier
 
 		let activeCell = activeCells.get(id)
 
@@ -1586,7 +1585,7 @@ function Main() {
 
 		let [colId, rowId] = id.split(':')
 		return (
-			<AutoLayout width={width}
+			<AutoLayout width={widthRendered}
 				height="fill-parent"
 				name="HeaderCell"
 				x={46}
@@ -1645,10 +1644,11 @@ function Main() {
 	function ColumnLetter({ children, rowIndex, colIndex, id, col }) {
 		let [colId, rowId] = id.split(":")
 
-		var width = setWidth(col) * theme.columnWidthMultipler
+		var width = setWidth(col, theme)
+		var widthRendered = width * theme.columnWidthMultiplier
 
 		return (
-			<AutoLayout width={width}
+			<AutoLayout width={widthRendered}
 				name="ColumnLetter"
 				x={46}
 				blendMode="pass-through"

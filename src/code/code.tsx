@@ -125,6 +125,7 @@ const CSVToArray = (data, delimiter = /,|;/, omitFirstRow = false) =>
     .split('\n')
     .map(v => v.split(delimiter));
 
+
 const transpose = (matrix) => {
   let [row] = matrix
   return row.map((value, column) => matrix.map(row => row[column]))
@@ -1218,11 +1219,11 @@ function Main() {
 
 
 						function exportToString(rows, cols) {
-							var string = ""
+							var string = ``
 							for (var i = 0; i < rows.length; i++) {
 								var rowId = rows[i]
 								if (i > 0) {
-									var rowString = ""
+									var rowString = ``
 									for (let x = 0; x < cols.length; x++) {
 										var colId = cols[x]
 
@@ -1231,10 +1232,19 @@ function Main() {
 												if (typeof cellData.data === "undefined") {
 													cellData.data = ''
 												}
+
+												// We need to add quotes if content contains comma
+												if (cellData.data.indexOf(',') > -1) {
+													console.log("contains a comma")
+													cellData.data = `"${cellData.data}"`
+												}
+
 												if (x !== cols.length - 1) {
 													cellData.data += ', '
 												}
 												rowString += cellData.data
+
+												console.log(rowString)
 											}
 									}
 									if (i !== rows.length - 1) {

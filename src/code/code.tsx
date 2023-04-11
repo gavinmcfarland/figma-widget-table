@@ -193,6 +193,9 @@ function Main() {
 	const [version, setVersion] = useSyncedState('version', 1)
 	const widgetId = useWidgetId()
 
+	let [iconSize, setIconSize] = useSyncedState("iconSize", 16);
+	let [editorType, setEditorType] = useSyncedState("editorType", () => figma.editorType);
+
 	let tableCells = useSyncedMap("tableCells")
 	let tableCols = useSyncedMap("tableCols")
 	let tableRows = useSyncedMap("tableRows")
@@ -206,6 +209,15 @@ function Main() {
 
 	// Check activeUsers still exist
 	useEffect(() => {
+
+		if (figma.editorType !== editorType) {
+			setEditorType(figma.editorType);
+			editorType = figma.editorType
+
+			console.log(editorType)
+		}
+
+
 		// waitForTask(new Promise(resolve => {
 
 
@@ -493,7 +505,19 @@ function Main() {
 		theme.columnWidthMultiplier = 2.4
 	}
 
+	if (editorType === "figjam") {
+		console.log("size", 18)
+		iconSize = 18
+	}
+	if (editorType === "figma") {
+		console.log("size", 16)
+		iconSize = 16
+	}
+
 	useEffect(() => {
+
+
+
 		if (!isInitialized) {
 
 
@@ -1048,12 +1072,6 @@ function Main() {
 		}
 	}
 
-	let iconSize = 16;
-
-	if (figma.editorType === "figjam") {
-		iconSize = 18
-	}
-
 	let colorItems = [
 		{
 			tooltip: '❤️ Ukraine',
@@ -1233,22 +1251,27 @@ function Main() {
 													cellData.data = ''
 												}
 
-												// We need to add quotes if content contains comma
-												if (cellData.data.indexOf(',') > -1) {
-													console.log("contains a comma")
+												// We need to escape quotes
+												if (cellData.data.indexOf('"') > -1) {
+													cellData.data = cellData.data.replace(/"/g, '""')
+
+												}
+
+												// We need to add quotes if content contains quote or comma
+												if (cellData.data.indexOf(',') > -1 || cellData.data.indexOf('"') > -1) {
 													cellData.data = `"${cellData.data}"`
 												}
 
 												if (x !== cols.length - 1) {
-													cellData.data += ', '
+													cellData.data += ','
 												}
+
 												rowString += cellData.data
 
-												console.log(rowString)
 											}
 									}
 									if (i !== rows.length - 1) {
-										rowString += '\n '
+										rowString += '\n'
 									}
 									string += rowString
 								}

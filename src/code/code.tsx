@@ -506,11 +506,9 @@ function Main() {
 	}
 
 	if (editorType === "figjam") {
-		console.log("size", 18)
 		iconSize = 18
 	}
 	if (editorType === "figma") {
-		console.log("size", 16)
 		iconSize = 16
 	}
 

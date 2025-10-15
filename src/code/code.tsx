@@ -1388,24 +1388,21 @@ function Main() {
 										strValue = String(value);
 									}
 
-									// Trim any leading/trailing whitespace
-									strValue = strValue.trim();
+									// Don't trim - preserve intentional whitespace
+									// strValue may contain leading/trailing spaces that are meaningful
 
 									// Check if the value needs to be quoted
-									// Quote if it contains: comma, quote, newline, carriage return, or tab
-									// This regex covers:
-									// - " (quote)
-									// - , (comma)
-									// - \n (newline/line feed)
-									// - \r (carriage return)
-									// - \t (tab)
-									// - \u2028 (Unicode line separator)
-									// - \u2029 (Unicode paragraph separator)
+									// RFC 4180: Fields containing line breaks, double quotes, and commas should be enclosed in double-quotes
+									// Also handle tabs and Unicode line separators for better compatibility
 									const needsQuoting =
-										/[",\n\r\t\u2028\u2029]/.test(strValue);
+										/[",\n\r\t\u2028\u2029]/.test(
+											strValue
+										) ||
+										strValue.startsWith(" ") ||
+										strValue.endsWith(" ");
 
-									if (needsQuoting) {
-										// Escape quotes by doubling them
+									if (needsQuoting || strValue === "") {
+										// Escape quotes by doubling them (RFC 4180)
 										const escaped = strValue.replace(
 											/"/g,
 											'""'
@@ -1437,10 +1434,8 @@ function Main() {
 										);
 									}
 
-									// Only add non-empty rows
-									if (cellValues.some((val) => val !== "")) {
-										csvRows.push(cellValues.join(","));
-									}
+									// Always include all rows to preserve table structure
+									csvRows.push(cellValues.join(","));
 								}
 
 								return csvRows.join("\n");

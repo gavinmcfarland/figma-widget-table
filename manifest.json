@@ -1,19 +1,20 @@
 {
-  "name": "Table",
-  "api": "1.0.0",
-  "widgetApi": "1.0.0",
-  "id": "1027585818512741999",
-  "editorType": ["figjam", "figma"],
-  "containsWidget": true,
-  "main": "dist/code.js",
-  "ui": {
-      "css": "src/ui/figma-plugin-ds.css",
-      "import": "dist/import.html",
-      "settings": "dist/settings.html",
-      "editCell": "dist/editCell.html"
-  },
-  "permissions": [
-    "currentuser",
-    "activeusers"
-  ]
+    "name": "Table",
+    "api": "1.0.0",
+    "widgetApi": "1.0.0",
+    "id": "1027585818512741999",
+    "editorType": ["figjam", "figma"],
+    "containsWidget": true,
+    "main": "dist/code.js",
+    "ui": {
+        "css": "src/ui/figma-plugin-ds.css",
+        "import": "dist/import.html",
+        "settings": "dist/settings.html",
+        "editCell": "dist/editCell.html"
+    },
+    "permissions": ["currentuser", "activeusers"],
+    "networkAccess": {
+        "allowedDomains": ["https://sheets.googleapis.com"],
+        "reason": "To support syncing from Google Sheets"
+    }
 }

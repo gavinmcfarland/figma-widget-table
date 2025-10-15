@@ -15,6 +15,7 @@
     "permissions": ["currentuser", "activeusers"],
     "networkAccess": {
         "allowedDomains": ["https://sheets.googleapis.com"],
-        "reason": "To support syncing from Google Sheets"
-    }
+        "reasoning": "To support syncing from Google Sheets"
+    },
+    "documentAccess": "dynamic-page"
 }

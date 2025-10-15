@@ -1402,13 +1402,14 @@ function Main() {
 
 								const csvRows: string[] = [];
 
-								// Export all rows including the header row (start from i=0 instead of i=1)
-								for (let i = 0; i < rows.length; i++) {
+								// Start from row 1 to skip column letter labels (row 0)
+								// Row 1 contains the actual data (or headers if widgetFirstRowAsHeader is true)
+								for (let i = 1; i < rows.length; i++) {
 									const rowId = rows[i];
 									const cellValues: string[] = [];
 
-									// Export all columns including the first column (start from x=0 instead of x=1)
-									for (let x = 0; x < cols.length; x++) {
+									// Start from column 1 to skip row number labels (column 0)
+									for (let x = 1; x < cols.length; x++) {
 										const colId = cols[x];
 										const cellData = tableCells.get(
 											`${colId}:${rowId}`

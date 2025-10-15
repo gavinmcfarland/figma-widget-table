@@ -1,7 +1,20 @@
-var _ = require('lodash');
-const { widget } = figma
-const { Frame, Text, Ellipse, Rectangle, SVG, useSyncedState, useSyncedMap, usePropertyMenu, AutoLayout, useEffect, waitForTask, Input, useWidgetId } = widget
-
+var _ = require("lodash");
+const { widget } = figma;
+const {
+	Frame,
+	Text,
+	Ellipse,
+	Rectangle,
+	SVG,
+	useSyncedState,
+	useSyncedMap,
+	usePropertyMenu,
+	AutoLayout,
+	useEffect,
+	waitForTask,
+	Input,
+	useWidgetId,
+} = widget;
 
 // TODO: Add ability to show/add title
 // TODO: Add ability to move  columns rows
@@ -23,29 +36,24 @@ const { Frame, Text, Ellipse, Rectangle, SVG, useSyncedState, useSyncedMap, useP
 // TODO: Prevent deleting last row or column
 
 function evalFunction(js) {
-
 	var value;
 
-	var reg = /(?:[a-z$_][a-z0-9$_]*)|(?:[;={}\[\]"'!&<>^\\?:])/ig,
-        valid = true;
+	var reg = /(?:[a-z$_][a-z0-9$_]*)|(?:[;={}\[\]"'!&<>^\\?:])/gi,
+		valid = true;
 
-    // Detect valid JS identifier names and replace them
-    js = js.replace(reg, function ($0) {
-        // If the name is a direct member of Math, allow
-        if (Math.hasOwnProperty($0))
-            return "Math."+$0;
-        // Otherwise the expression is invalid
-        else
-            valid = false;
-    });
-
-
+	// Detect valid JS identifier names and replace them
+	js = js.replace(reg, function ($0) {
+		// If the name is a direct member of Math, allow
+		if (Math.hasOwnProperty($0)) return "Math." + $0;
+		// Otherwise the expression is invalid
+		else valid = false;
+	});
 
 	if (valid) {
 		try {
 			// for expressions
 			// value = eval(js);
-			value = Function('"use strict";return (' + js + ')')()
+			value = Function('"use strict";return (' + js + ")")();
 		} catch (e) {
 			// if (e instanceof SyntaxError) {
 			// 	try {
@@ -53,7 +61,7 @@ function evalFunction(js) {
 			// 		value = (new Function('with(this) { ' + js + ' }')).call(context);
 			// 	} catch (e) {}
 			// }
-			console.log(e)
+			console.log(e);
 		}
 	}
 
@@ -61,34 +69,32 @@ function evalFunction(js) {
 }
 
 function evalData(data) {
-	let renderedData = data
+	let renderedData = data;
 	// only run on strings
-	if (typeof data === 'string' || data instanceof String) {
+	if (typeof data === "string" || data instanceof String) {
 		if (data === "=") {
-			renderedData = ""
-		}
-		else if (data.startsWith("=")) {
-			let evalCode = evalFunction(data.substring(1))
+			renderedData = "";
+		} else if (data.startsWith("=")) {
+			let evalCode = evalFunction(data.substring(1));
 			if (evalCode || evalCode === 0) {
-				renderedData = evalCode
-			}
-			else {
-				renderedData = "#ERROR!"
+				renderedData = evalCode;
+			} else {
+				renderedData = "#ERROR!";
 			}
 		}
 	}
 
-	return renderedData
+	return renderedData;
 }
 
-console.clear()
+console.clear();
 
 function numToIndices(num: number): number[] {
-	const ret = []
+	const ret = [];
 	for (let i = 0; i < num; i++) {
-		ret.push(i)
+		ret.push(i);
 	}
-	return ret
+	return ret;
 }
 
 // function getNumberColumnsAndRows(entries) {
@@ -113,23 +119,21 @@ function numToIndices(num: number): number[] {
 
 function convertToNumber(data) {
 	if (Number(data)) {
-		return Number(data)
-	}
-	else {
-		return data
+		return Number(data);
+	} else {
+		return data;
 	}
 }
 const CSVToArray = (data, delimiter = /,|;/, omitFirstRow = false) =>
-  data
-    .slice(omitFirstRow ? data.indexOf('\n') + 1 : 0)
-    .split('\n')
-    .map(v => v.split(delimiter));
-
+	data
+		.slice(omitFirstRow ? data.indexOf("\n") + 1 : 0)
+		.split("\n")
+		.map((v) => v.split(delimiter));
 
 const transpose = (matrix) => {
-  let [row] = matrix
-  return row.map((value, column) => matrix.map(row => row[column]))
-}
+	let [row] = matrix;
+	return row.map((value, column) => matrix.map((row) => row[column]));
+};
 
 // const mapToArray = (map) => {
 // 	console.log(map)
@@ -138,139 +142,179 @@ const transpose = (matrix) => {
 
 const componentProps = {
 	headerCell: {
-		fill: { "type": "solid", "visible": true, "opacity": 1, "blendMode": "normal", "color": { "r": 0.9624999761581421, "g": 0.9624999761581421, "b": 0.9624999761581421, "a": 1 } }
+		fill: {
+			type: "solid",
+			visible: true,
+			opacity: 1,
+			blendMode: "normal",
+			color: {
+				r: 0.9624999761581421,
+				g: 0.9624999761581421,
+				b: 0.9624999761581421,
+				a: 1,
+			},
+		},
 	},
 	defaultCell: {
-		fill: { "type": "solid", "visible": true, "opacity": 1, "blendMode": "normal", "color": { "r": 1, "g": 1, "b": 1, "a": 1 } }
-	}
-}
+		fill: {
+			type: "solid",
+			visible: true,
+			opacity: 1,
+			blendMode: "normal",
+			color: { r: 1, g: 1, b: 1, a: 1 },
+		},
+	},
+};
 
 const alphabet = [
-	'', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'
-]
-
-
-
-
+	"",
+	"A",
+	"B",
+	"C",
+	"D",
+	"E",
+	"F",
+	"G",
+	"H",
+	"I",
+	"J",
+	"K",
+	"L",
+	"M",
+	"N",
+	"O",
+	"P",
+	"Q",
+	"R",
+	"S",
+	"T",
+	"U",
+	"V",
+	"W",
+	"X",
+	"Y",
+	"Z",
+];
 
 function cellHeight(height) {
 	if (height > 277) {
-		height = 277+94
+		height = 277 + 94;
 	} else {
-		height += 94
+		height += 94;
 	}
 
-	return height
+	return height;
 }
 
-
-
 function Main() {
-
 	// let [count, setCount] = useSyncedState("count", 0)
 
-	let [increment, setIncrement] = useSyncedState("increment", 0)
+	let [increment, setIncrement] = useSyncedState("increment", 0);
 
 	function genRandomId(index = 1, manIncrement) {
-
-		var uniqueId
+		var uniqueId;
 		if (manIncrement) {
-			uniqueId = `${figma.currentUser.id}${figma.currentUser.sessionId}${manIncrement}-${index}`
-		}
-		else {
-			uniqueId = `${figma.currentUser.id}${figma.currentUser.sessionId}${increment}-${index}`
-			setIncrement(increment + 1)
+			uniqueId = `${figma.currentUser.id}${figma.currentUser.sessionId}${manIncrement}-${index}`;
+		} else {
+			uniqueId = `${figma.currentUser.id}${figma.currentUser.sessionId}${increment}-${index}`;
+			setIncrement(increment + 1);
 		}
 
 		// var uniqueId = uniqueId = `${figma.currentUser.id}${figma.currentUser.sessionId}-${index}`
 
-
-
-		return uniqueId
+		return uniqueId;
 	}
 
-	const [isInitialized, setIsInitialized] = useSyncedState<boolean>('init', false)
-	const [version, setVersion] = useSyncedState('version', 1)
-	const widgetId = useWidgetId()
+	const [isInitialized, setIsInitialized] = useSyncedState<boolean>(
+		"init",
+		false
+	);
+	const [version, setVersion] = useSyncedState("version", 1);
+	const widgetId = useWidgetId();
 
 	let [iconSize, setIconSize] = useSyncedState("iconSize", 16);
-	let [editorType, setEditorType] = useSyncedState("editorType", () => figma.editorType);
+	let [editorType, setEditorType] = useSyncedState(
+		"editorType",
+		() => figma.editorType
+	);
 
-	let tableCells = useSyncedMap("tableCells")
-	let tableCols = useSyncedMap("tableCols")
-	let tableRows = useSyncedMap("tableRows")
-	let activeCells = useSyncedMap("activeCells")
+	let tableCells = useSyncedMap("tableCells");
+	let tableCols = useSyncedMap("tableCols");
+	let tableRows = useSyncedMap("tableRows");
+	let activeCells = useSyncedMap("activeCells");
 
 	let [widgetTheme, setWidgetTheme] = useSyncedState("widgetTheme", "light");
-	let [dataEndpoint, setDataEndpoint] = useSyncedState("dataEndpoint", null)
-	let [widgetSettings, setWidgetSettings] = useSyncedState("widgetSettings", null)
-	let [widgetName, setWidgetName] = useSyncedState("widgetName", "")
-	let [widgetFirstRowAsHeader, setWidgetFirstRowAsHeader] = useSyncedState("widgetFirstRowAsHeader", true);
+	let [dataEndpoint, setDataEndpoint] = useSyncedState("dataEndpoint", null);
+	let [widgetSettings, setWidgetSettings] = useSyncedState(
+		"widgetSettings",
+		null
+	);
+	let [widgetName, setWidgetName] = useSyncedState("widgetName", "");
+	let [widgetFirstRowAsHeader, setWidgetFirstRowAsHeader] = useSyncedState(
+		"widgetFirstRowAsHeader",
+		true
+	);
 
 	// Check activeUsers still exist
 	useEffect(() => {
-
 		if (figma.editorType !== editorType) {
 			setEditorType(figma.editorType);
-			editorType = figma.editorType
+			editorType = figma.editorType;
 
-			console.log(editorType)
+			console.log(editorType);
 		}
-
 
 		// waitForTask(new Promise(resolve => {
 
+		// figma.on('close', () => {
+		// Find inactive users
+		let entries = activeCells.entries();
 
-			// figma.on('close', () => {
-				// Find inactive users
-				let entries = activeCells.entries()
+		entries.map((entry) => {
+			let inactiveUsers: any = [];
+			let activeUserIds = figma.activeUsers.map((a) => a.id);
+			let activeUserSessionIds = figma.activeUsers.map(
+				(a) => a.sessionId
+			);
 
-				entries.map(entry => {
-					let inactiveUsers: any = [];
-					let activeUserIds = figma.activeUsers.map(a => a.id);
-					let activeUserSessionIds = figma.activeUsers.map(a => a.sessionId);
+			entry[1].users.map((user) => {
+				if (
+					!(
+						activeUserIds.includes(user.id) &&
+						activeUserSessionIds.includes(user.sessionId)
+					)
+				) {
+					// Remove user from list of users
+					entry[1].users.splice(entry[1].users.indexOf(user), 1);
+					inactiveUsers.push(user);
+				}
 
-					entry[1].users.map((user) => {
+				if (inactiveUsers.length > 0) {
+					if (entry[1].users.length > 0) {
+						activeCells.set(entry[0], entry[1]);
+					} else {
+						activeCells.delete(entry[0]);
+					}
+				}
+			});
+		});
 
-						if (!(activeUserIds.includes(user.id) && activeUserSessionIds.includes(user.sessionId))) {
-
-							// Remove user from list of users
-							entry[1].users.splice(entry[1].users.indexOf(user), 1)
-							inactiveUsers.push(user)
-
-						}
-
-						if (inactiveUsers.length > 0) {
-
-							if (entry[1].users.length > 0) {
-								activeCells.set(entry[0], entry[1])
-							}
-							else {
-								activeCells.delete(entry[0])
-							}
-						}
-
-					})
-
-				})
-
-				// resolve()
-			// })
+		// resolve()
+		// })
 
 		// }))
-	})
+	});
 
+	let [widgetColor, setWidgetColor] = useSyncedState(
+		"widgetColor",
+		"#9747FF"
+	);
+	let [widgetScale, setWidgetScale] = useSyncedState("widgetScale", "small");
 
-	let [widgetColor, setWidgetColor] = useSyncedState("widgetColor", "#9747FF")
-	let [widgetScale, setWidgetScale] = useSyncedState("widgetScale", "small")
-
-	let showCellsBeingEdited = true
-
-
-
+	let showCellsBeingEdited = true;
 
 	function putEntriesIntoArray(map) {
-		var entries = map.entries()
+		var entries = map.entries();
 
 		// put entries in order
 
@@ -279,69 +323,71 @@ function Main() {
 			if (b[1].order > a[1].order) return -1;
 
 			return 0;
-		})
+		});
 
 		// then reduce down to just an array of single items
 
 		entries.map((item) => {
-			item.pop()
-			return item
-		})
-		return entries
+			item.pop();
+			return item;
+		});
+		return entries;
 	}
 
 	function addActiveCell(id) {
-
-		let activeCell = activeCells.get(id)
+		let activeCell = activeCells.get(id);
 		let currentUser = {
 			id: figma.currentUser.id,
 			sessionId: figma.currentUser.sessionId,
-			color: figma.currentUser.color
-		}
+			color: figma.currentUser.color,
+		};
 
 		// If activeCell doesn't exist, create it
 		if (!activeCell) {
-			activeCells.set(id , {
-				users: [currentUser]
-			})
-
+			activeCells.set(id, {
+				users: [currentUser],
+			});
 		}
 		// If it does then add new user
 		else {
 			if (activeCell.users) {
-				if (!activeCell.users.some(user => user.id === currentUser.id && user.sessionId === currentUser.sessionId)) {
-					activeCell.users.unshift(currentUser)
-					activeCells.set(id, {users: activeCell.users})
+				if (
+					!activeCell.users.some(
+						(user) =>
+							user.id === currentUser.id &&
+							user.sessionId === currentUser.sessionId
+					)
+				) {
+					activeCell.users.unshift(currentUser);
+					activeCells.set(id, { users: activeCell.users });
 				}
 			}
-
-
 		}
-
-
-
 	}
 
 	function removeActiveCell(id) {
-
-		let activeCell = activeCells.get(id)
+		let activeCell = activeCells.get(id);
 
 		// filter active users
 		if (activeCell) {
 			// Remove user entry if id and session dones't match current user
-			let users = activeCell.users.filter((user) => !(user.id === figma.currentUser.id && user.sessionId === figma.currentUser.sessionId))
+			let users = activeCell.users.filter(
+				(user) =>
+					!(
+						user.id === figma.currentUser.id &&
+						user.sessionId === figma.currentUser.sessionId
+					)
+			);
 
 			// If no users then remove active cell from map
 			if (users.length === 0) {
-				activeCells.delete(id)
-			}
-			else {
+				activeCells.delete(id);
+			} else {
 				// Otherwise set new data to entry in map
-				activeCell.users = users
-				activeCells.set(id, activeCell)
+				activeCell.users = users;
+				activeCells.set(id, activeCell);
 			}
 		}
-
 	}
 
 	function setTheme(color) {
@@ -351,13 +397,14 @@ function Main() {
 		((Red value X 299) + (Green value X 587) + (Blue value X 114)) / 1000
 		*/
 		var threshold = 160; /* about half of 256. Lower threshold equals more dark text on dark background  */
-		var cBrightness = ((color.r * 255 * 299) + (color.g * 255 * 587) + (color.b * 255 * 114)) / 1000;
+		var cBrightness =
+			(color.r * 255 * 299 + color.g * 255 * 587 + color.b * 255 * 114) /
+			1000;
 
-		if (cBrightness > threshold || figma.editorType === "figjam"){
-			setWidgetTheme("light")
-		}
-		else {
-			setWidgetTheme("dark")
+		if (cBrightness > threshold || figma.editorType === "figjam") {
+			setWidgetTheme("light");
+		} else {
+			setWidgetTheme("dark");
 		}
 	}
 
@@ -365,11 +412,11 @@ function Main() {
 		// Migrate changes to data on render
 
 		// Get cols
-		let cols = tableCols.entries()
+		let cols = tableCols.entries();
 
 		// Loop table cols
 		for (let i = 0; i < cols.length; i++) {
-			let [id, data] = cols[i]
+			let [id, data] = cols[i];
 
 			if (data.size === "small") {
 				data.size = 144;
@@ -381,12 +428,11 @@ function Main() {
 				data.size = 480;
 			}
 
-			tableCols.set(id, data)
+			tableCols.set(id, data);
 		}
-
 	}
 
-	let theme : any = {};
+	let theme: any = {};
 
 	if (widgetTheme === "light") {
 		theme = {
@@ -395,42 +441,84 @@ function Main() {
 			colorBgTertiary: "#e6e6e6",
 			colorBgHeaderCell: "#f5f5f5",
 			colorText: "#000",
-			colorTextSecondary: { "type": "solid", "visible": true, "opacity": 1, "blendMode": "normal", "color": { "r": 0, "g": 0, "b": 0, "a": 0.8 } },
-			colorTextTertiary: { "type": "solid", "visible": true, "blendMode": "normal", "color": { "r": 0, "g": 0, "b": 0, "a": 0.4 } },
+			colorTextSecondary: {
+				type: "solid",
+				visible: true,
+				opacity: 1,
+				blendMode: "normal",
+				color: { r: 0, g: 0, b: 0, a: 0.8 },
+			},
+			colorTextTertiary: {
+				type: "solid",
+				visible: true,
+				blendMode: "normal",
+				color: { r: 0, g: 0, b: 0, a: 0.4 },
+			},
 			colorBorder: "#e6e6e6",
 			colorBorderGradient: {
 				type: "gradient-linear",
-				gradientHandlePositions:
-				  [
+				gradientHandlePositions: [
 					{ x: 0.5, y: 0 },
 					{ x: 0.5, y: 1 },
 					{ x: 1, y: 0 },
-				  ],
-				gradientStops: [
-				  {
-					position: 0,
-					color: {
-					  r: 0.9019607901573181,
-					  g: 0.9019607901573181,
-					  b: 0.9019607901573181,
-					  a: 0,
-					},
-				  },
-				  {
-					position: 0.7135416865348816,
-					color: {
-					  r: 0.9019607901573181,
-					  g: 0.9019607901573181,
-					  b: 0.9019607901573181,
-					  a: 1,
-					},
-				  },
 				],
-			  },
+				gradientStops: [
+					{
+						position: 0,
+						color: {
+							r: 0.9019607901573181,
+							g: 0.9019607901573181,
+							b: 0.9019607901573181,
+							a: 0,
+						},
+					},
+					{
+						position: 0.7135416865348816,
+						color: {
+							r: 0.9019607901573181,
+							g: 0.9019607901573181,
+							b: 0.9019607901573181,
+							a: 1,
+						},
+					},
+				],
+			},
 			colorHover: "#FAFAFA",
-			shadowBorderLeft: [{ "type": "inner-shadow", "color": { "r": 0.8980392217636108, "g": 0.8980392217636108, "b": 0.8980392217636108, "a": 1 }, "offset": { "x": 1, "y": 0 }, "spread": 0, "visible": true, "blendMode": "normal", "showShadowBehindNode": false, "blur": 0 }],
-			shadowBorderBottom: [{ "type": "inner-shadow", "color": { "r": 0.8980392217636108, "g": 0.8980392217636108, "b": 0.8980392217636108, "a": 1 }, "offset": { "x": 0, "y": -1 }, "spread": 0, "visible": true, "blendMode": "normal", "showShadowBehindNode": false, "blur": 0 }]
-		}
+			shadowBorderLeft: [
+				{
+					type: "inner-shadow",
+					color: {
+						r: 0.8980392217636108,
+						g: 0.8980392217636108,
+						b: 0.8980392217636108,
+						a: 1,
+					},
+					offset: { x: 1, y: 0 },
+					spread: 0,
+					visible: true,
+					blendMode: "normal",
+					showShadowBehindNode: false,
+					blur: 0,
+				},
+			],
+			shadowBorderBottom: [
+				{
+					type: "inner-shadow",
+					color: {
+						r: 0.8980392217636108,
+						g: 0.8980392217636108,
+						b: 0.8980392217636108,
+						a: 1,
+					},
+					offset: { x: 0, y: -1 },
+					spread: 0,
+					visible: true,
+					blendMode: "normal",
+					showShadowBehindNode: false,
+					blur: 0,
+				},
+			],
+		};
 	}
 
 	if (widgetTheme === "dark") {
@@ -440,86 +528,112 @@ function Main() {
 			colorBgTertiary: "#444444",
 			colorBgHeaderCell: "#383838",
 			colorText: "#fff",
-			colorTextSecondary: { "type": "solid", "visible": true, "blendMode": "normal", "color": { "r": 1, "g": 1, "b": 1, "a": 0.8 } },
-			colorTextTertiary: { "type": "solid", "visible": true, "blendMode": "normal", "color": { "r": 1, "g": 1, "b": 1, "a": 0.4 } },
+			colorTextSecondary: {
+				type: "solid",
+				visible: true,
+				blendMode: "normal",
+				color: { r: 1, g: 1, b: 1, a: 0.8 },
+			},
+			colorTextTertiary: {
+				type: "solid",
+				visible: true,
+				blendMode: "normal",
+				color: { r: 1, g: 1, b: 1, a: 0.4 },
+			},
 			colorBorder: "#444444",
 			colorBorderGradient: {
 				type: "gradient-linear",
-				gradientHandlePositions:
-				  [
+				gradientHandlePositions: [
 					{ x: 0.5, y: 0 },
 					{ x: 0.5, y: 1 },
 					{ x: 0, y: 0 },
-				  ],
-				gradientStops: [
-				  {
-					position: 0,
-					color: {
-					  r: 0.2666666805744171,
-					  g: 0.2666666805744171,
-					  b: 0.2666666805744171,
-					  a: 0,
-					},
-				  },
-				  {
-					position: 0.7135416865348816,
-					color: {
-					  r: 0.2666666805744171,
-					  g: 0.2666666805744171,
-					  b: 0.2666666805744171,
-					  a: 1,
-					},
-				  },
 				],
-			  },
+				gradientStops: [
+					{
+						position: 0,
+						color: {
+							r: 0.2666666805744171,
+							g: 0.2666666805744171,
+							b: 0.2666666805744171,
+							a: 0,
+						},
+					},
+					{
+						position: 0.7135416865348816,
+						color: {
+							r: 0.2666666805744171,
+							g: 0.2666666805744171,
+							b: 0.2666666805744171,
+							a: 1,
+						},
+					},
+				],
+			},
 			colorHover: "#313131",
-			shadowBorderLeft: [{ "type": "inner-shadow", "color": { "r": 75 / 255, "g": 75 / 255, "b": 75 / 255, "a": 1 }, "offset": { "x": 1, "y": 0 }, "spread": 0, "visible": true, "blendMode": "normal", "showShadowBehindNode": false, "blur": 0 }],
-			shadowBorderBottom: [{ "type": "inner-shadow", "color": { "r": 75 / 255, "g": 75 / 255, "b": 75 / 255, "a": 1 }, "offset": { "x": 0, "y": -1 }, "spread": 0, "visible": true, "blendMode": "normal", "showShadowBehindNode": false, "blur": 0 }]
-		}
+			shadowBorderLeft: [
+				{
+					type: "inner-shadow",
+					color: { r: 75 / 255, g: 75 / 255, b: 75 / 255, a: 1 },
+					offset: { x: 1, y: 0 },
+					spread: 0,
+					visible: true,
+					blendMode: "normal",
+					showShadowBehindNode: false,
+					blur: 0,
+				},
+			],
+			shadowBorderBottom: [
+				{
+					type: "inner-shadow",
+					color: { r: 75 / 255, g: 75 / 255, b: 75 / 255, a: 1 },
+					offset: { x: 0, y: -1 },
+					spread: 0,
+					visible: true,
+					blendMode: "normal",
+					showShadowBehindNode: false,
+					blur: 0,
+				},
+			],
+		};
 	}
 
 	// if (widgetScale === "small") {
-		theme.textSize = 12
-		theme.paddingScaleX = 1
-		theme.paddingScaleY = 1
-		theme.rowNumberWidth = 46
-		theme.columnLetterHeight = 32 - 6
-		theme.columnWidthMultiplier = 1
+	theme.textSize = 12;
+	theme.paddingScaleX = 1;
+	theme.paddingScaleY = 1;
+	theme.rowNumberWidth = 46;
+	theme.columnLetterHeight = 32 - 6;
+	theme.columnWidthMultiplier = 1;
 	// }
 
 	if (widgetScale === "medium") {
-		theme.textSize = 18
-		theme.paddingScaleX = 1.5
-		theme.paddingScaleY = 1.2
-		theme.rowNumberWidth = 62
-		theme.columnLetterHeight = 46 - 6
-		theme.columnWidthMultiplier = 1.5
+		theme.textSize = 18;
+		theme.paddingScaleX = 1.5;
+		theme.paddingScaleY = 1.2;
+		theme.rowNumberWidth = 62;
+		theme.columnLetterHeight = 46 - 6;
+		theme.columnWidthMultiplier = 1.5;
 	}
 
 	if (widgetScale === "large") {
-		theme.textSize = 30
-		theme.paddingScaleX = 2
-		theme.paddingScaleY = 1.5
-		theme.rowNumberWidth = 90
-		theme.columnLetterHeight = 48 - 6
-		theme.columnWidthMultiplier = 2.4
+		theme.textSize = 30;
+		theme.paddingScaleX = 2;
+		theme.paddingScaleY = 1.5;
+		theme.rowNumberWidth = 90;
+		theme.columnLetterHeight = 48 - 6;
+		theme.columnWidthMultiplier = 2.4;
 	}
 
 	if (editorType === "figjam") {
-		iconSize = 18
+		iconSize = 18;
 	}
 	if (editorType === "figma") {
-		iconSize = 16
+		iconSize = 16;
 	}
 
 	useEffect(() => {
-
-
-
 		if (!isInitialized) {
-
-
-			setTheme(figma.currentPage.backgrounds[0].color)
+			setTheme(figma.currentPage.backgrounds[0].color);
 
 			// let color = {r: 0.11764705926179886, g: 0.11764705926179886, b: 0.11764705926179886}
 			// if (JSON.stringify(figma.currentPage.backgrounds[0].color) === JSON.stringify(color)) {
@@ -527,25 +641,29 @@ function Main() {
 			// 	setWidgetTheme("dark")
 			// }
 			numToIndices(3).map((item, i) => {
-				tableCols.set(genRandomId(i), { order: i, size: "medium" })
-			})
+				tableCols.set(genRandomId(i), { order: i, size: "medium" });
+			});
 
 			numToIndices(4).map((item, i) => {
-				tableRows.set(genRandomId(i), { order: i})
-			})
+				tableRows.set(genRandomId(i), { order: i });
+			});
 
-			setIsInitialized(true)
+			setIsInitialized(true);
 		}
 		if (version < 2) {
-			updateColumnSizeData()
-			setVersion(2)
+			updateColumnSizeData();
+			setVersion(2);
 		}
-	})
+	});
 
-
-	let cols = putEntriesIntoArray(tableCols).length === 0 ? ['1', '2', '3'] : putEntriesIntoArray(tableCols)
-	let rows = putEntriesIntoArray(tableRows).length === 0 ? ['1', '2', '3'] : putEntriesIntoArray(tableRows)
-
+	let cols =
+		putEntriesIntoArray(tableCols).length === 0
+			? ["1", "2", "3"]
+			: putEntriesIntoArray(tableCols);
+	let rows =
+		putEntriesIntoArray(tableRows).length === 0
+			? ["1", "2", "3"]
+			: putEntriesIntoArray(tableRows);
 
 	// useEffect(() => {
 	// 	waitForTask(new Promise (resolve => {
@@ -556,9 +674,8 @@ function Main() {
 	// 	}))
 	// })
 
-
 	function setWidth(col, theme) {
-		var width = col?.size || 144
+		var width = col?.size || 144;
 
 		// This is needed temporarily because widget needs to render once before recieveing updated state
 		if (col?.size === "small") {
@@ -571,20 +688,19 @@ function Main() {
 			width = 480;
 		}
 
-		return width
+		return width;
 	}
 
 	function resizeColumn(colIndex, size) {
-		var colData = tableCols.get(colIndex)
-		size = convertToNumber(size)
-		tableCols.set(colIndex, { ...colData, size })
+		var colData = tableCols.get(colIndex);
+		size = convertToNumber(size);
+		tableCols.set(colIndex, { ...colData, size });
 	}
 
 	function addColumn(colIndex, position = 1) {
-		var uniqueId = genRandomId(colIndex + 1)
+		var uniqueId = genRandomId(colIndex + 1);
 
-
-		var virtualEntries = tableCols.entries()
+		var virtualEntries = tableCols.entries();
 
 		// 1. Sort the entries in order
 		virtualEntries.sort((a, b) => {
@@ -592,84 +708,105 @@ function Main() {
 			if (b[1].order > a[1].order) return -1;
 
 			return 0;
-		})
+		});
 
 		// 2. Set new col entry
-		tableCols.set(uniqueId, { order: '', size: 'medium' })
-
+		tableCols.set(uniqueId, { order: "", size: "medium" });
 
 		// 2. Splice new entry into virtualEntries
-		virtualEntries.splice(colIndex + position, 0, [uniqueId, { order: '', size: 'medium' }])
+		virtualEntries.splice(colIndex + position, 0, [
+			uniqueId,
+			{ order: "", size: "medium" },
+		]);
 
 		// 4. Reset order on entries now that new column has been created
 		virtualEntries.map((entry, i) => {
-			tableCols.set(entry[0], { ...entry[1], order: i, size: entry[1].size })
-		})
-
+			tableCols.set(entry[0], {
+				...entry[1],
+				order: i,
+				size: entry[1].size,
+			});
+		});
 	}
 
 	function moveColumn(colIndex, position = 1) {
-
-		function move(array, from, to){
-			array.splice(to, 0, array.splice(from,1)[0]);
+		function move(array, from, to) {
+			array.splice(to, 0, array.splice(from, 1)[0]);
 			return array;
-		};
+		}
 
-		var virtualEntries = tableCols.entries()
+		var virtualEntries = tableCols.entries();
 
-		if ((colIndex + position) > 0 && (colIndex + position) < virtualEntries.length) {
-
+		if (
+			colIndex + position > 0 &&
+			colIndex + position < virtualEntries.length
+		) {
 			// 1. Sort the entries in order
 			virtualEntries.sort((a, b) => {
 				if (a[1].order > b[1].order) return 1;
 				if (b[1].order > a[1].order) return -1;
 
 				return 0;
-			})
+			});
 
-			virtualEntries = move(virtualEntries, colIndex, colIndex + position)
+			virtualEntries = move(
+				virtualEntries,
+				colIndex,
+				colIndex + position
+			);
 
 			// 4. Reset order on entries now that new column has been created
 			virtualEntries.map((entry, i) => {
-				tableCols.set(entry[0], { ...entry[1], order: i, size: entry[1].size })
-			})
+				tableCols.set(entry[0], {
+					...entry[1],
+					order: i,
+					size: entry[1].size,
+				});
+			});
 		}
-
 	}
 
 	function moveRow(rowIndex, position = 1) {
-
-		function move(array, from, to){
-			array.splice(to, 0, array.splice(from,1)[0]);
+		function move(array, from, to) {
+			array.splice(to, 0, array.splice(from, 1)[0]);
 			return array;
-		};
+		}
 
-		var virtualEntries = tableRows.entries()
+		var virtualEntries = tableRows.entries();
 
-		if ((rowIndex + position) > 0 && (rowIndex + position) < virtualEntries.length) {
+		if (
+			rowIndex + position > 0 &&
+			rowIndex + position < virtualEntries.length
+		) {
 			// 1. Sort the entries in order
 			virtualEntries.sort((a, b) => {
 				if (a[1].order > b[1].order) return 1;
 				if (b[1].order > a[1].order) return -1;
 
 				return 0;
-			})
+			});
 
-			virtualEntries = move(virtualEntries, rowIndex, rowIndex + position)
+			virtualEntries = move(
+				virtualEntries,
+				rowIndex,
+				rowIndex + position
+			);
 
 			// 4. Reset order on entries now that new column has been created
 			virtualEntries.map((entry, i) => {
-				tableRows.set(entry[0], { ...entry[1], order: i, size: entry[1].size })
-			})
+				tableRows.set(entry[0], {
+					...entry[1],
+					order: i,
+					size: entry[1].size,
+				});
+			});
 		}
-
 	}
 
 	function addRow(rowIndex, position = 1) {
-		var uniqueId = genRandomId(rowIndex + 1)
+		var uniqueId = genRandomId(rowIndex + 1);
 
-
-		var virtualEntries = tableRows.entries()
+		var virtualEntries = tableRows.entries();
 
 		// 1. Sort the entries in order
 		virtualEntries.sort((a, b) => {
@@ -677,67 +814,67 @@ function Main() {
 			if (b[1].order > a[1].order) return -1;
 
 			return 0;
-		})
+		});
 
 		// 2. Set new col entry
 
-		tableRows.set(uniqueId, { order: '' })
+		tableRows.set(uniqueId, { order: "" });
 
 		// 2. Splice new entry into virtualEntries
-		virtualEntries.splice(rowIndex + position, 0, [uniqueId, { order: '' }])
-
+		virtualEntries.splice(rowIndex + position, 0, [
+			uniqueId,
+			{ order: "" },
+		]);
 
 		// 4. Reset order on entries now that new column has been created
 		virtualEntries.map((entry, i) => {
-			tableRows.set(entry[0], { ...entry[1], order: i })
-		})
-
+			tableRows.set(entry[0], { ...entry[1], order: i });
+		});
 	}
 
 	// TODO: Update do it doesn't mutate original table
 	function removeColumn(colId) {
 		// Delete column
-		tableCols.delete(colId)
+		tableCols.delete(colId);
 
 		// Delete associated entries
 		for (let i = 0; i < tableCells.entries().length; i++) {
-			var entry = tableCells.entries()[i]
+			var entry = tableCells.entries()[i];
 			if (entry[0].startsWith(colId)) {
-				tableCells.delete(entry[0])
+				tableCells.delete(entry[0]);
 			}
 		}
 	}
 
-
 	function removeRow(rowId) {
 		// Delete column
-		tableRows.delete(rowId)
+		tableRows.delete(rowId);
 
 		// Delete associated entries
 		for (let i = 0; i < tableCells.entries().length; i++) {
-			var entry = tableCells.entries()[i]
+			var entry = tableCells.entries()[i];
 			if (entry[0].endsWith(rowId)) {
-				tableCells.delete(entry[0])
+				tableCells.delete(entry[0]);
 			}
 		}
 	}
 
 	function editCell(id, colIndex, rowIndex, cols, rows, event) {
-
 		// const widgetNode = figma.getNodeById(widgetId) as WidgetNode;
 
 		// let widgetX = ((figma.viewport.bounds.x + figma.viewport.bounds.width) - (50 / figma.viewport.zoom) - (300 / figma.viewport.zoom)) , widgetY = (figma.viewport.bounds.y + (50 / figma.viewport.zoom));
 
-
 		// (166 * 2) (300 * 2)
 
-		let {data, active} = tableCells.get(id) || { data: '', active: false }
-		let [colId, rowId] = id.split(':')
+		let { data, active } = tableCells.get(id) || {
+			data: "",
+			active: false,
+		};
+		let [colId, rowId] = id.split(":");
 		let currentCellId = id;
 
 		// Gets the colour of first cell first clicked (not previous)
-		let previousCellColor = active
-
+		let previousCellColor = active;
 
 		const onmessage = (message) => {
 			// if (message.type === "window-loaded") {
@@ -750,8 +887,7 @@ function Main() {
 			// 	}
 			// }
 			if (message.type === "next-cell") {
-
-				({ colIndex, rowIndex } = message.data)
+				({ colIndex, rowIndex } = message.data);
 
 				// // When we receive the data it's a string, so we need to convert any numbers to numbers
 				// data = convertToNumber(data)
@@ -760,43 +896,46 @@ function Main() {
 					// Reset current cell color before moving onto next
 					// let liveData = tableCells.get(currentCellId).data
 					// tableCells.set(currentCellId, { data: liveData, active: previousCellColor })
-					removeActiveCell(currentCellId)
+					removeActiveCell(currentCellId);
 				}
 
 				if (message.target) {
-
 					if (message.target[0] === 1) {
-						if ((colIndex + 1) > 0 && (colIndex + 1) < (cols.length)) {
-							colIndex = colIndex + 1
+						if (colIndex + 1 > 0 && colIndex + 1 < cols.length) {
+							colIndex = colIndex + 1;
 						}
-						colId = cols[colIndex]
-					}
-					else if (message.target[0] === -1) {
-						if ((colIndex - 1) > 0 && (colIndex - 1) < (cols.length + 1)) {
-							colIndex = colIndex - 1
+						colId = cols[colIndex];
+					} else if (message.target[0] === -1) {
+						if (
+							colIndex - 1 > 0 &&
+							colIndex - 1 < cols.length + 1
+						) {
+							colIndex = colIndex - 1;
 						}
-						colId = cols[colIndex]
-					}
-					else if (message.target[1] === 1) {
-						if ((rowIndex + 1) > 0 && (rowIndex + 1) < (rows.length)) {
-							rowIndex = rowIndex + 1
+						colId = cols[colIndex];
+					} else if (message.target[1] === 1) {
+						if (rowIndex + 1 > 0 && rowIndex + 1 < rows.length) {
+							rowIndex = rowIndex + 1;
 						}
-						rowId = rows[rowIndex]
-
-					}
-					else if (message.target[1] === -1) {
-						if ((rowIndex - 1) > 0 && (rowIndex - 1) < (rows.length + 1)) {
-							rowIndex = rowIndex - 1
+						rowId = rows[rowIndex];
+					} else if (message.target[1] === -1) {
+						if (
+							rowIndex - 1 > 0 &&
+							rowIndex - 1 < rows.length + 1
+						) {
+							rowIndex = rowIndex - 1;
 						}
-						id = `${colId}:${rows[rowIndex]}`
-						rowId = rows[rowIndex]
-
+						id = `${colId}:${rows[rowIndex]}`;
+						rowId = rows[rowIndex];
 					}
 
 					// Change the current cell ID to the new newly selected cell
-					currentCellId = `${colId}:${rowId}`
+					currentCellId = `${colId}:${rowId}`;
 
-					var nextCell = tableCells.get(currentCellId) || { data: '', active: false }
+					var nextCell = tableCells.get(currentCellId) || {
+						data: "",
+						active: false,
+					};
 
 					if (showCellsBeingEdited) {
 						// Store the cell colour
@@ -805,31 +944,32 @@ function Main() {
 						// tableCells.set(currentCellId, { data: nextCell.data, active: figma.currentUser.color })
 
 						// Add color to next cell
-						addActiveCell(currentCellId)
+						addActiveCell(currentCellId);
 					}
 
-					figma.ui.postMessage({ type: "post-data", data: {data: nextCell.data, rowIndex, colIndex} })
-
+					figma.ui.postMessage({
+						type: "post-data",
+						data: { data: nextCell.data, rowIndex, colIndex },
+					});
 				}
-
 			}
 
 			if (message.type === "data-received") {
-
-				data = message.data.data
-				let isLink = message.data.link
+				data = message.data.data;
+				let isLink = message.data.link;
 
 				if (Number(message.data)) {
-					data = Number(message.data.data)
+					data = Number(message.data.data);
 				}
 
-				let link = ""
+				let link = "";
 				if (isLink) {
-					if (data.startsWith("http://") || data.startsWith("https://")) {
-						link = data
-					}
-					else {
-
+					if (
+						data.startsWith("http://") ||
+						data.startsWith("https://")
+					) {
+						link = data;
+					} else {
 						// TODO: Mailto: not supported by href on Text
 						// var expression = /(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/gm
 						// var regex = new RegExp(expression);
@@ -838,74 +978,76 @@ function Main() {
 						// 	console.log(link)
 						// }
 						// else {
-							link = "http://" + data
+						link = "http://" + data;
 						// }
-
 					}
-
 				}
 
 				// if (data === "=") {
 				// 	data = ""
 				// }
 
-				tableCells.set(currentCellId, { data, active, link})
+				tableCells.set(currentCellId, { data, active, link });
 
 				if (showCellsBeingEdited) {
-					addActiveCell(currentCellId)
+					addActiveCell(currentCellId);
 				}
 
 				// figma.commitUndo();
-
 			}
 
 			if (message.type === "resize-ui") {
-				figma.ui.resize(300, cellHeight(message.data.textareaHeight))
+				figma.ui.resize(300, cellHeight(message.data.textareaHeight));
 			}
 
 			if (message.type === "close-plugin") {
-				figma.closePlugin()
+				figma.closePlugin();
 			}
-		}
+		};
 
 		return new Promise((resolve) => {
-
-				figma.clientStorage.getAsync("userPreferences").then((settings) => {
-					settings = settings || { navigateOnEnter: false }
-
-					if (showCellsBeingEdited) {
-
-						// tableCells.set(id, { data, active: figma.currentUser.color })
-
-						// When plugin window is opened add active colour to cell
-						addActiveCell(id)
-					}
-
-					figma.showUI(`<style>${__uiFiles__["css"]}</style>${__uiFiles__["editCell"]}`, { title: "Cell", width: 300, height: cellHeight(31), themeColors: true });
-					figma.ui.postMessage({ type: "show-ui", settings })
-					figma.ui.postMessage({ type: "post-data", data: {data, rowIndex, colIndex } })
-
-					// if (showCellsBeingEdited) {
-
-					// 	// tableCells.set(id, { data, active: figma.currentUser.color })
-
-					// 	// When plugin window is opened add active colour to cell
-					// 	addActiveCell(id)
-					// }
-
-				})
-
-				figma.ui.on('message', onmessage)
+			figma.clientStorage.getAsync("userPreferences").then((settings) => {
+				settings = settings || { navigateOnEnter: false };
 
 				if (showCellsBeingEdited) {
-					figma.on('close', () => {
-						removeActiveCell(currentCellId)
-					})
+					// tableCells.set(id, { data, active: figma.currentUser.color })
+
+					// When plugin window is opened add active colour to cell
+					addActiveCell(id);
 				}
 
+				figma.showUI(
+					`<style>${__uiFiles__["css"]}</style>${__uiFiles__["editCell"]}`,
+					{
+						title: "Cell",
+						width: 300,
+						height: cellHeight(31),
+						themeColors: true,
+					}
+				);
+				figma.ui.postMessage({ type: "show-ui", settings });
+				figma.ui.postMessage({
+					type: "post-data",
+					data: { data, rowIndex, colIndex },
+				});
 
-		})
+				// if (showCellsBeingEdited) {
 
+				// 	// tableCells.set(id, { data, active: figma.currentUser.color })
+
+				// 	// When plugin window is opened add active colour to cell
+				// 	addActiveCell(id)
+				// }
+			});
+
+			figma.ui.on("message", onmessage);
+
+			if (showCellsBeingEdited) {
+				figma.on("close", () => {
+					removeActiveCell(currentCellId);
+				});
+			}
+		});
 	}
 
 	// function sortColumn(table, colIndex) {
@@ -938,59 +1080,51 @@ function Main() {
 	// }
 
 	function checkTable(table) {
+		var numberRows = table.length;
+		var numberColumns = table[0].length;
 
-		var numberRows = table.length
-		var numberColumns = table[0].length
-
-		var pass = true
+		var pass = true;
 
 		if (numberColumns > 100 || numberRows > 100) {
-			pass = false
+			pass = false;
 		}
 
-		return pass
+		return pass;
 	}
 
 	function sortTable(id, rows, sortDescending = false) {
-
 		// Find the entries in that column
 
-		var colEntries = []
+		var colEntries = [];
 
 		// FIXME: Can't rely on order of map. Try finding another way to get entries because some are undefined.
 		for (let i = 0; i < rows.length; i++) {
-			let rowId = rows[i]
-			let colId = id
-			let cellId = `${colId}:${rowId}`
-			var setData = tableCells.get(cellId) || { data: '', active: false };
+			let rowId = rows[i];
+			let colId = id;
+			let cellId = `${colId}:${rowId}`;
+			var setData = tableCells.get(cellId) || { data: "", active: false };
 
-			setData.data = convertToNumber(setData.data)
+			setData.data = convertToNumber(setData.data);
 
-			colEntries.push([cellId, setData])
-
+			colEntries.push([cellId, setData]);
 		}
-
-
 
 		// Remove the entry which is the letterCell then the header?
-		var firstColEntry = colEntries.shift()
+		var firstColEntry = colEntries.shift();
 
-		var secondColEntry
+		var secondColEntry;
 
 		if (widgetFirstRowAsHeader) {
-			secondColEntry = colEntries.shift()
+			secondColEntry = colEntries.shift();
 		}
-
-
-
 
 		// Sort the entries in that column
 		colEntries.sort((a, b) => {
 			// // Ensures that blank entries are allways at the bottom
-			if(a[1].data === '' || a[1].data === null) return 1;
-			if(b[1].data === '' || b[1].data === null) return -1;
+			if (a[1].data === "" || a[1].data === null) return 1;
+			if (b[1].data === "" || b[1].data === null) return -1;
 
-			if(a[1].data === b[1].data) return 0;
+			if (a[1].data === b[1].data) return 0;
 
 			// // Reverse the sorting
 			// if (sortDescending) {
@@ -1002,30 +1136,26 @@ function Main() {
 
 			// Reverse the sorting
 			if (sortDescending) {
-				return  a[1].data > b[1].data ? -1 : 1;
-			}
-			else {
+				return a[1].data > b[1].data ? -1 : 1;
+			} else {
 				return a[1].data < b[1].data ? -1 : 1;
 			}
-
-		})
+		});
 
 		// Add back the first entry which is the header?
 		if (widgetFirstRowAsHeader) {
-			colEntries.splice(0, 0, secondColEntry)
+			colEntries.splice(0, 0, secondColEntry);
 		}
 
-		colEntries.splice(0, 0, firstColEntry)
+		colEntries.splice(0, 0, firstColEntry);
 
 		// Assign a new order to the rows
 		colEntries.map((entry, i) => {
 			if (entry) {
-				let [colId, rowId] = entry[0].split(":")
-				tableRows.set(rowId, { order: i })
+				let [colId, rowId] = entry[0].split(":");
+				tableRows.set(rowId, { order: i });
 			}
-
-		})
-
+		});
 	}
 
 	// useEffect(() => {
@@ -1048,153 +1178,150 @@ function Main() {
 <circle cx="14" cy="14" r="13" stroke="#9747FF" stroke-width="2"/>
 <circle cx="14" cy="14" r="10" fill="${color}"/>
 </svg>
-`
+`;
 		} else {
 			return `<svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
 <circle cx="14" cy="14" r="10" fill="${color}"/>
-</svg>`
+</svg>`;
 		}
-
 	}
 
 	function deleteAllEntries(map) {
-		var entries = map.entries()
+		var entries = map.entries();
 		for (let i = 0; i < entries.length; i++) {
 			// if (i === 0) {
 
 			// }
 			// else {
-				var entry = entries[i]
-				map.delete(entry[0])
+			var entry = entries[i];
+			map.delete(entry[0]);
 			// }
 		}
 	}
 
 	let colorItems = [
 		{
-			tooltip: '❤️ Ukraine',
-			propertyName: 'ukraine',
-			itemType: 'action',
+			tooltip: "❤️ Ukraine",
+			propertyName: "ukraine",
+			itemType: "action",
 			icon: (() => {
-				if (widgetColor === 'ukraine') {
+				if (widgetColor === "ukraine") {
 					return `<svg width="${iconSize}" height="${iconSize}"  fill="none" xmlns="http://www.w3.org/2000/svg">
 					<mask id="mask0_2_56" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="${iconSize}" height="${iconSize}">
-					<rect width="${iconSize}" height="${iconSize}" rx="${iconSize / 2}" fill="#D9D9D9"/>
+					<rect width="${iconSize}" height="${iconSize}" rx="${
+						iconSize / 2
+					}" fill="#D9D9D9"/>
 					</mask>
 					<g mask="url(#mask0_2_56)">
 					<rect width="${iconSize}" height="${iconSize / 2}" fill="#006ADB"/>
-					<rect y="${iconSize / 2}" width="${iconSize}" height="${iconSize / 2}" fill="#FDD403"/>
-					<rect x="0.5" y="0.5" width="${iconSize - 1}" height="${iconSize - 1}" rx="7.5" stroke="white" stroke-opacity="0.16" style="mix-blend-mode:screen"/>
+					<rect y="${iconSize / 2}" width="${iconSize}" height="${
+						iconSize / 2
+					}" fill="#FDD403"/>
+					<rect x="0.5" y="0.5" width="${iconSize - 1}" height="${
+						iconSize - 1
+					}" rx="7.5" stroke="white" stroke-opacity="0.16" style="mix-blend-mode:screen"/>
 					</g>
 					</svg>
-					`
+					`;
 				} else {
 					return `<svg width="${iconSize}" height="${iconSize}" fill="none" xmlns="http://www.w3.org/2000/svg">
 					<g style="mix-blend-mode:luminosity">
 					<mask id="mask0_2_49" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="${iconSize}" height="${iconSize}">
-					<rect width="${iconSize}" height="${iconSize}" rx="${iconSize / 2}" fill="#D9D9D9"/>
+					<rect width="${iconSize}" height="${iconSize}" rx="${
+						iconSize / 2
+					}" fill="#D9D9D9"/>
 					</mask>
 					<g mask="url(#mask0_2_49)">
 					<rect width="${iconSize}" height=" ${iconSize / 2}" fill="#575757"/>
-					<rect y="${iconSize / 2}" width="${iconSize}" height="${iconSize / 2}" fill="#C9C9C9"/>
-					<rect x="0.5" y="0.5" width="${iconSize - 1}" height="${iconSize - 1}" rx="7.5" stroke="white" stroke-opacity="0.16" style="mix-blend-mode:screen"/>
+					<rect y="${iconSize / 2}" width="${iconSize}" height="${
+						iconSize / 2
+					}" fill="#C9C9C9"/>
+					<rect x="0.5" y="0.5" width="${iconSize - 1}" height="${
+						iconSize - 1
+					}" rx="7.5" stroke="white" stroke-opacity="0.16" style="mix-blend-mode:screen"/>
 					</g>
 					</g>
 					</svg>
 
-					`
+					`;
 				}
-			})()
-		}
-	]
+			})(),
+		},
+	];
 
 	usePropertyMenu(
 		[
 			...colorItems,
 			{
-				itemType: 'color-selector',
-        		propertyName: 'colorSelector',
-        		tooltip: 'Color',
-        		selectedOption: widgetColor,
-        		options: [
-					{	option: "#E05A33",
-						tooltip: "Red"
-					},
-					{	option: "#F6C944",
-						tooltip: "Yellow"
-					},
-					{	option: "#4DA660",
-						tooltip: "Green"
-					},
-					{	option: "#739AF0",
-						tooltip: "Blue"
-					},
+				itemType: "color-selector",
+				propertyName: "colorSelector",
+				tooltip: "Color",
+				selectedOption: widgetColor,
+				options: [
+					{ option: "#E05A33", tooltip: "Red" },
+					{ option: "#F6C944", tooltip: "Yellow" },
+					{ option: "#4DA660", tooltip: "Green" },
+					{ option: "#739AF0", tooltip: "Blue" },
 					{
 						option: "#9747FF",
-						tooltip: "Purple"
+						tooltip: "Purple",
 					},
-					{	option: "#C6803E",
-						tooltip: "Brown"
-					},
-					{	option: "#545454",
-						tooltip: "Grey"
-					}
+					{ option: "#C6803E", tooltip: "Brown" },
+					{ option: "#545454", tooltip: "Grey" },
 				],
-
 			},
 			{
-				itemType: 'separator'
+				itemType: "separator",
 			},
 			{
-				itemType: 'dropdown',
-        		propertyName: 'widgetScale',
-        		tooltip: 'Font size',
+				itemType: "dropdown",
+				propertyName: "widgetScale",
+				tooltip: "Font size",
 				options: [
 					{
 						option: "small",
-						label: "Small"
+						label: "Small",
 					},
 					{
 						option: "medium",
-						label: "Medium"
+						label: "Medium",
 					},
 					{
 						option: "large",
-						label: "Large"
-					}
+						label: "Large",
+					},
 				],
-				selectedOption: widgetScale
+				selectedOption: widgetScale,
 			},
 			{
-				itemType: 'separator'
+				itemType: "separator",
 			},
 			{
-				tooltip: 'Import',
-				propertyName: 'import',
-				itemType: 'action',
+				tooltip: "Import",
+				propertyName: "import",
+				itemType: "action",
 				icon: `<svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
 				<path fill-rule="evenodd" clip-rule="evenodd" d="M18.3977 21.7725L18 22.1703L17.6023 21.7725L14.2273 18.3975L15.0227 17.602L17.4375 20.0168V11.2498H18.5625V20.0168L20.9773 17.602L21.7727 18.3975L18.3977 21.7725ZM11.25 22.4998H10.125V24.7498V25.8748H11.25H24.75H25.875V24.7498V22.4998H24.75V24.7498H11.25V22.4998Z" fill="white"/>
-				</svg>`
+				</svg>`,
 			},
 			{
-				tooltip: 'Settings',
-				propertyName: 'settings',
-				itemType: 'action',
+				tooltip: "Settings",
+				propertyName: "settings",
+				itemType: "action",
 				icon: `<svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
 				<path fill-rule="evenodd" clip-rule="evenodd" d="M13.5 18.0563V10.125H14.625V18.0563C15.9088 18.3168 16.875 19.4518 16.875 20.8125C16.875 22.1732 15.9088 23.3082 14.625 23.5687V25.875H13.5V23.5687C12.2162 23.3082 11.25 22.1732 11.25 20.8125C11.25 19.4518 12.2162 18.3168 13.5 18.0563ZM15.75 20.8125C15.75 21.7445 14.9945 22.5 14.0625 22.5C13.1305 22.5 12.375 21.7445 12.375 20.8125C12.375 19.8805 13.1305 19.125 14.0625 19.125C14.9945 19.125 15.75 19.8805 15.75 20.8125ZM21.375 25.875H22.5V17.9437C23.7838 17.6832 24.75 16.5482 24.75 15.1875C24.75 13.8268 23.7838 12.6918 22.5 12.4313V10.125H21.375V12.4313C20.0912 12.6918 19.125 13.8268 19.125 15.1875C19.125 16.5482 20.0912 17.6832 21.375 17.9437V25.875ZM23.625 15.1875C23.625 14.2555 22.8695 13.5 21.9375 13.5C21.0055 13.5 20.25 14.2555 20.25 15.1875C20.25 16.1195 21.0055 16.875 21.9375 16.875C22.8695 16.875 23.625 16.1195 23.625 15.1875Z" fill="white"/>
-				</svg>`
-			}
+				</svg>`,
+			},
 		],
 		async ({ propertyName, propertyValue }) => {
-			if (propertyName === "ukraine") setWidgetColor("ukraine")
-
+			if (propertyName === "ukraine") setWidgetColor("ukraine");
 
 			if (propertyName === "colorSelector") {
-				setWidgetColor(propertyValue)
+				setWidgetColor(propertyValue);
 			}
 
 			if (propertyName === "widgetScale") {
-				setWidgetScale(propertyValue)
+				setWidgetScale(propertyValue);
 			}
 			// if (propertyName === "colorGrey") setWidgetColor("#545454")
 			// if (propertyName === "colorRed") setWidgetColor("#E05A33")
@@ -1218,220 +1345,268 @@ function Main() {
 			// 		tableCells.delete(entry[0])
 			// 	})
 			// }
-			if (propertyName === 'settings') {
+			if (propertyName === "settings") {
 				await new Promise<void>((resolve) => {
+					figma.clientStorage
+						.getAsync("userPreferences")
+						.then((settings) => {
+							settings = settings || {
+								navigateOnEnterInput: false,
+							};
 
-					figma.clientStorage.getAsync("userPreferences").then((settings) => {
-						settings = settings || { navigateOnEnterInput: false }
-
-
-						figma.showUI(`
+							figma.showUI(
+								`
 					<style>${__uiFiles__["css"]}</style>
 					${__uiFiles__["settings"]}
-          `, { title: "Settings", width: 300, height: 304+16+16, themeColors: true });
+          `,
+								{
+									title: "Settings",
+									width: 300,
+									height: 304 + 16 + 16,
+									themeColors: true,
+								}
+							);
 
-						figma.ui.postMessage({ type: "post-settings", settings, widgetSettings, widgetTheme, widgetFirstRowAsHeader })
+							figma.ui.postMessage({
+								type: "post-settings",
+								settings,
+								widgetSettings,
+								widgetTheme,
+								widgetFirstRowAsHeader,
+							});
 
+							function exportToString(rows, cols) {
+								// Helper function to properly escape and format CSV cell values
+								const escapeCSVCell = (value: any): string => {
+									// Convert to string and handle undefined/null
+									const strValue =
+										value == null ? "" : String(value);
 
-						function exportToString(rows, cols) {
-							var string = ``
-							for (var i = 0; i < rows.length; i++) {
-								var rowId = rows[i]
-								if (i > 0) {
-									var rowString = ``
+									// Check if the value needs to be quoted
+									// Quote if it contains: comma, quote, newline, or carriage return
+									const needsQuoting = /[",\n\r]/.test(
+										strValue
+									);
+
+									if (needsQuoting) {
+										// Escape quotes by doubling them
+										const escaped = strValue.replace(
+											/"/g,
+											'""'
+										);
+										return `"${escaped}"`;
+									}
+
+									return strValue;
+								};
+
+								const csvRows: string[] = [];
+
+								// Export all rows including the header row (start from i=0 instead of i=1)
+								for (let i = 0; i < rows.length; i++) {
+									const rowId = rows[i];
+									const cellValues: string[] = [];
+
+									// Export all columns including the first column (start from x=0 instead of x=1)
 									for (let x = 0; x < cols.length; x++) {
-										var colId = cols[x]
+										const colId = cols[x];
+										const cellData = tableCells.get(
+											`${colId}:${rowId}`
+										) || { data: "" };
+										const cellValue = cellData.data ?? "";
 
-											if (x > 0) {
-												var cellData = tableCells.get(`${colId}:${rowId}`) || { data: '' }
-												if (typeof cellData.data === "undefined") {
-													cellData.data = ''
-												}
-
-												// We need to escape quotes
-												if (cellData.data.indexOf('"') > -1) {
-													cellData.data = cellData.data.replace(/"/g, '""')
-
-												}
-
-												// We need to add quotes if content contains quote or comma
-												if (cellData.data.indexOf(',') > -1 || cellData.data.indexOf('"') > -1) {
-													cellData.data = `"${cellData.data}"`
-												}
-
-												if (x !== cols.length - 1) {
-													cellData.data += ','
-												}
-
-												rowString += cellData.data
-
-											}
+										cellValues.push(
+											escapeCSVCell(cellValue)
+										);
 									}
-									if (i !== rows.length - 1) {
-										rowString += '\n'
+
+									csvRows.push(cellValues.join(","));
+								}
+
+								return csvRows.join("\n");
+							}
+
+							figma.ui.onmessage = (message) => {
+								if (message.type === "settings-saved") {
+									figma.clientStorage.setAsync(
+										"userPreferences",
+										message.settings
+									);
+								}
+								if (message.type === "widget-settings-saved") {
+									setWidgetSettings(message.settings);
+
+									if (
+										message.settings
+											?.showCellsBeingEdited === false
+									) {
+										activeCells.entries().map((entry) => {
+											activeCells.delete(entry[0]);
+										});
 									}
-									string += rowString
 								}
-							}
-							return string
-						}
-
-
-
-						figma.ui.onmessage = (message) => {
-
-							if (message.type === "settings-saved") {
-								figma.clientStorage.setAsync("userPreferences", message.settings)
-							}
-							if (message.type === "widget-settings-saved") {
-								setWidgetSettings(message.settings)
-
-								if (message.settings?.showCellsBeingEdited === false) {
-									activeCells.entries().map((entry) => {
-										activeCells.delete(entry[0])
-									})
+								if (message.type === "widget-theme-saved") {
+									setWidgetTheme(message.theme);
 								}
-							}
-							if (message.type === "widget-theme-saved") {
-								setWidgetTheme(message.theme)
-							}
-							if (message.type === "widget-first-row-as-header-saved") {
-								setWidgetFirstRowAsHeader(message.firstRowAsHeader)
-							}
-							if (message.type === "clear-table") {
-								tableCells.entries().map((entry) => {
-									tableCells.delete(entry[0])
-								})
-							}
-							if (message.type === "export-data") {
-								var exportedString = exportToString(rows, cols)
-								figma.ui.postMessage({ type: "export-data", exportedString })
-							}
-						}
-					})
-
-
-				})
+								if (
+									message.type ===
+									"widget-first-row-as-header-saved"
+								) {
+									setWidgetFirstRowAsHeader(
+										message.firstRowAsHeader
+									);
+								}
+								if (message.type === "clear-table") {
+									tableCells.entries().map((entry) => {
+										tableCells.delete(entry[0]);
+									});
+								}
+								if (message.type === "export-data") {
+									var exportedString = exportToString(
+										rows,
+										cols
+									);
+									figma.ui.postMessage({
+										type: "export-data",
+										exportedString,
+									});
+								}
+							};
+						});
+				});
 			}
-			if (propertyName === 'import') {
+			if (propertyName === "import") {
 				// console.log("import")
 				await new Promise<void>((resolve) => {
-
-
-					figma.showUI(`
+					figma.showUI(
+						`
 					<style>${__uiFiles__["css"]}</style>
 					${__uiFiles__["import"]}
-          `, { title: "Import", width: 340, height: 252 + 16 + 16, themeColors: true });
+          `,
+						{
+							title: "Import",
+							width: 340,
+							height: 252 + 16 + 16,
+							themeColors: true,
+						}
+					);
 
 					// if (dataEndpoint) {
-						figma.ui.postMessage({ dataEndpoint })
+					figma.ui.postMessage({ dataEndpoint });
 					// }
 
 					figma.ui.onmessage = (message) => {
 						// console.log(CSVToArray(message))
 						if (message.type === "file-received") {
-							const handler = figma.notify("Importing data...", {timeout: 600});
+							const handler = figma.notify("Importing data...", {
+								timeout: 600,
+							});
 
-							var origDataEndpoint = dataEndpoint
+							var origDataEndpoint = dataEndpoint;
 							if (message.api !== "file") {
-								let { api, url, sheetName } = message
+								let { api, url, sheetName } = message;
 
-								setDataEndpoint({api, url, sheetName})
-								dataEndpoint = {api, url, sheetName}
+								setDataEndpoint({ api, url, sheetName });
+								dataEndpoint = { api, url, sheetName };
+							} else {
+								setDataEndpoint({ api: message.api });
+								dataEndpoint = { api: message.api };
 							}
-							else {
-								setDataEndpoint({api: message.api})
-								dataEndpoint = {api: message.api}
-							}
 
-
-							var newTable
+							var newTable;
 							if (Array.isArray(message.data)) {
-								newTable = message.data
+								newTable = message.data;
+							} else {
+								newTable = CSVToArray(
+									message.data.replace(/^\s+|\s+$/g, "")
+								);
 							}
-							else {
-								newTable = CSVToArray(message.data.replace(/^\s+|\s+$/g, ''))
-							}
-
 
 							// Import table
 							if (checkTable(newTable)) {
-
 								// TODO: How can I wait for data to be set?
 
 								// Create a clone of the originalTableCols so we can merge their values back into the table
-								var origTableCols = _.cloneDeep(tableCols.entries())
-								origTableCols.shift()
-
+								var origTableCols = _.cloneDeep(
+									tableCols.entries()
+								);
+								origTableCols.shift();
 
 								// Delete existing data
-								deleteAllEntries(tableCells)
-								deleteAllEntries(tableCols)
-								deleteAllEntries(tableRows)
-
+								deleteAllEntries(tableCells);
+								deleteAllEntries(tableCols);
+								deleteAllEntries(tableRows);
 
 								// This adds the table letters and numbers
 								numToIndices(1).map((item, i) => {
-									tableCols.set(genRandomId(i), { order: i })
-									tableRows.set(genRandomId(i), { order: i })
-								})
-
+									tableCols.set(genRandomId(i), { order: i });
+									tableRows.set(genRandomId(i), { order: i });
+								});
 
 								// // Create a serries of entries
 								// // Generate ids for cols
 
-								var cols = []
+								var cols = [];
 
 								var colId;
 								for (let r = 0; r < newTable.length; r++) {
-									var row = newTable[r]
+									var row = newTable[r];
 
-									var rowId = genRandomId(r + 1)
-									tableRows.set(`${rowId}`, { order: r })
+									var rowId = genRandomId(r + 1);
+									tableRows.set(`${rowId}`, { order: r });
 
 									for (let c = 0; c < row.length; c++) {
-										var cell = row[c]
+										var cell = row[c];
 										if (r === 0) {
-											colId = genRandomId(c + 1)
-											cols.push(colId)
+											colId = genRandomId(c + 1);
+											cols.push(colId);
 										}
-										cell = convertToNumber(cell)
-										tableCells.set(`${cols[c]}:${rowId}`, { data: cell })
+										cell = convertToNumber(cell);
+										tableCells.set(`${cols[c]}:${rowId}`, {
+											data: cell,
+										});
 									}
 								}
 
 								// TODO: Need to add existing size?
 								for (let c = 0; c < cols.length; c++) {
-									var colId = cols[c]
+									var colId = cols[c];
 
 									// We make a clone of the original tableCols array it gets deleted, then we can merge the data back in
 									// Just merge size for now as not sure if we want order to be preserved
-									var entry = origTableCols[c]
+									var entry = origTableCols[c];
 
 									// Only keep column size if dataEndpoint as googleSheets has been set or if CSV file is being used
 
-									var size = origDataEndpoint?.api === "googleSheets" || dataEndpoint?.api === "file" ? entry && entry[1]?.size : 240
+									var size =
+										origDataEndpoint?.api ===
+											"googleSheets" ||
+										dataEndpoint?.api === "file"
+											? entry && entry[1]?.size
+											: 240;
 									// var size = entry && entry[1]?.size
 									// Quick fix
 									if (!size) {
-										size = 240
+										size = 240;
 									}
 
-									tableCols.set(`${colId}`, { size, order: c })
+									tableCols.set(`${colId}`, {
+										size,
+										order: c,
+									});
 								}
 
-
-								resolve()
+								resolve();
+							} else {
+								figma.notify(
+									"Data must be 100 rows and columns or less"
+								);
 							}
-							else {
-								figma.notify("Data must be 100 rows and columns or less");
-							}
-
 						}
 
 						if (message.type === "detach-api") {
-							setDataEndpoint(null)
-							figma.ui.postMessage({ dataEndpoint: undefined })
+							setDataEndpoint(null);
+							figma.ui.postMessage({ dataEndpoint: undefined });
 						}
 
 						if (message.type === "no-file") {
@@ -1443,119 +1618,133 @@ function Main() {
 						}
 
 						if (message.type === "api-error") {
-							figma.notify("Check link is correct and publicly visable");
+							figma.notify(
+								"Check link is correct and publicly visable"
+							);
 						}
-
-
-
-
-					}
-				})
+					};
+				});
 			}
-		},
-	)
+		}
+	);
 
 	function Title() {
 		return (
-		  <AutoLayout
-			name="Title"
-			fill={theme.colorBgSecondary}
-			padding={{
-			  top: 8 * theme.paddingScaleY,
-			  right: 0,
-			  bottom: 4 * theme.paddingScaleY,
-			  left: 0,
-			}}
-			width="fill-parent"
-			horizontalAlignItems="center"
-      verticalAlignItems="center"
-		  >
-			<Input
-
-			  value={widgetName}
-				placeholder="Title"
-				onTextEditEnd={(e) => {
-
-						setWidgetName(e.characters);
-
-
+			<AutoLayout
+				name="Title"
+				fill={theme.colorBgSecondary}
+				padding={{
+					top: 8 * theme.paddingScaleY,
+					right: 0,
+					bottom: 4 * theme.paddingScaleY,
+					left: 0,
 				}}
-				fontSize={theme.textSize}
-				horizontalAlignText="center"
-				fill={theme.colorTextTertiary}
-				fontWeight={600}
-				lineHeight={20 * theme.paddingScaleY}
-				// inputFrameProps={{
-				// }}
-				width={260}
-				// inputBehavior="wrap"
-/>
-		  </AutoLayout>
+				width="fill-parent"
+				horizontalAlignItems="center"
+				verticalAlignItems="center"
+			>
+				<Input
+					value={widgetName}
+					placeholder="Title"
+					onTextEditEnd={(e) => {
+						setWidgetName(e.characters);
+					}}
+					fontSize={theme.textSize}
+					horizontalAlignText="center"
+					fill={theme.colorTextTertiary}
+					fontWeight={600}
+					lineHeight={20 * theme.paddingScaleY}
+					// inputFrameProps={{
+					// }}
+					width={260}
+					// inputBehavior="wrap"
+				/>
+			</AutoLayout>
 		);
-	  }
+	}
 
-	function Cell({ children, id, cell, rowIndex, colIndex, col, cornerRadius }) {
-
-		var width = setWidth(col, theme)
-		var widthRendered = width * theme.columnWidthMultiplier
-
+	function Cell({
+		children,
+		id,
+		cell,
+		rowIndex,
+		colIndex,
+		col,
+		cornerRadius,
+	}) {
+		var width = setWidth(col, theme);
+		var widthRendered = width * theme.columnWidthMultiplier;
 
 		var strokePaint = [];
 
-		var strokeWidth = 0
+		var strokeWidth = 0;
 
-		let activeCell = activeCells.get(id)
+		let activeCell = activeCells.get(id);
 
 		if (activeCell) {
-			strokeWidth = activeCell.users[0] ? 2 : 0
-			strokePaint = activeCell.users[0] ? activeCell.users[0].color : []
+			strokeWidth = activeCell.users[0] ? 2 : 0;
+			strokePaint = activeCell.users[0] ? activeCell.users[0].color : [];
 		}
 
 		let href = "";
 		let hrefBorder = "none";
 
 		if (cell.link) {
-			href = cell.link
+			href = cell.link;
 			// hrefColor = "#007BFF";
 			hrefBorder = "underline";
 		}
 
 		// let data = evalData(cell.data)
-		let data = cell.data
-
-
-
+		let data = cell.data;
 
 		return (
-			<AutoLayout width={widthRendered}
-
+			<AutoLayout
+				width={widthRendered}
 				height="fill-parent"
 				name="DefaultCell"
 				x={46}
 				blendMode="pass-through"
 				fill={theme.colorBg}
-
-				padding={{ "top": 0, "right": 0, "bottom": 0, "left": 0 }}
+				padding={{ top: 0, right: 0, bottom: 0, left: 0 }}
 				overflow="visible"
-				onClick={(event) => editCell(id, colIndex, rowIndex, cols, rows, event)}
+				onClick={(event) =>
+					editCell(id, colIndex, rowIndex, cols, rows, event)
+				}
 			>
-				<Frame width={1}
+				<Frame
+					width={1}
 					height="fill-parent"
 					name="Border"
 					blendMode="pass-through"
-					cornerRadius={{ "topLeft": 0, "topRight": 0, "bottomLeft": 0, "bottomRight": 0 }}
+					cornerRadius={{
+						topLeft: 0,
+						topRight: 0,
+						bottomLeft: 0,
+						bottomRight: 0,
+					}}
 					overflow="visible"
-					fill={theme.colorBorder}>
-				</Frame>
-				<AutoLayout width="fill-parent"
+					fill={theme.colorBorder}
+				></Frame>
+				<AutoLayout
+					width="fill-parent"
 					height="hug-contents"
 					name="Content"
 					x={1}
 					blendMode="pass-through"
-					padding={{ "top": 14 * theme.paddingScaleY, "right": 1, "bottom": 14 * theme.paddingScaleY, "left": (14 * theme.paddingScaleX) - 1 }}
+					padding={{
+						top: 14 * theme.paddingScaleY,
+						right: 1,
+						bottom: 14 * theme.paddingScaleY,
+						left: 14 * theme.paddingScaleX - 1,
+					}}
 					spacing={10}
-					overflow="visible">
-					<Text key={id} width="fill-parent" href={href}
+					overflow="visible"
+				>
+					<Text
+						key={id}
+						width="fill-parent"
+						href={href}
 						name="Text"
 						blendMode="pass-through"
 						fill={theme.colorText}
@@ -1563,7 +1752,8 @@ function Main() {
 						fontWeight={400}
 						fontSize={theme.textSize * 1.333}
 						verticalAlignText="center"
-						textDecoration={hrefBorder}>
+						textDecoration={hrefBorder}
+					>
 						{data}
 					</Text>
 				</AutoLayout>
@@ -1576,81 +1766,109 @@ function Main() {
 						type: "left-right",
 						leftOffset: 1,
 						rightOffset: 0,
-					  }}
-					  y={{
+					}}
+					y={{
 						type: "top-bottom",
 						topOffset: 0,
 						bottomOffset: 0,
-					  }}></Rectangle>
+					}}
+				></Rectangle>
 			</AutoLayout>
-		)
+		);
 	}
 
 	function HeaderCell({ children, rowIndex, colIndex, id, cell, col }) {
-
 		var strokePaint = [];
-		var strokeWidth = 0
+		var strokeWidth = 0;
 
-		var width = setWidth(col, theme)
-		var widthRendered = width * theme.columnWidthMultiplier
+		var width = setWidth(col, theme);
+		var widthRendered = width * theme.columnWidthMultiplier;
 
-		let activeCell = activeCells.get(id)
+		let activeCell = activeCells.get(id);
 
 		if (activeCell) {
-			strokeWidth = activeCell.users[0] ? 2 : 0
-			strokePaint = activeCell.users[0] ? activeCell.users[0].color : []
+			strokeWidth = activeCell.users[0] ? 2 : 0;
+			strokePaint = activeCell.users[0] ? activeCell.users[0].color : [];
 		}
 
 		let href = "";
 		let hrefBorder = "none";
 
 		// let data = evalData(cell.data)
-		let data = cell.data
+		let data = cell.data;
 
 		if (cell.link) {
-			href = cell.link
+			href = cell.link;
 			// hrefColor = "#007BFF";
 			hrefBorder = "underline";
 		}
 
-		let [colId, rowId] = id.split(':')
+		let [colId, rowId] = id.split(":");
 		return (
-			<AutoLayout width={widthRendered}
+			<AutoLayout
+				width={widthRendered}
 				height="fill-parent"
 				name="HeaderCell"
 				x={46}
 				blendMode="pass-through"
 				fill={theme.colorBgHeaderCell}
-				cornerRadius={{ "topLeft": 0, "topRight": 0, "bottomLeft": 0, "bottomRight": 0 }}
-				padding={{ "top": 0, "right": 0, "bottom": 0, "left": 0 }}
+				cornerRadius={{
+					topLeft: 0,
+					topRight: 0,
+					bottomLeft: 0,
+					bottomRight: 0,
+				}}
+				padding={{ top: 0, right: 0, bottom: 0, left: 0 }}
 				overflow="visible"
 				onClick={() => editCell(id, colIndex, rowIndex, cols, rows)}
 			>
-				<Frame width={1}
+				<Frame
+					width={1}
 					height="fill-parent"
 					name="Border"
 					blendMode="pass-through"
-					cornerRadius={{ "topLeft": 0, "topRight": 0, "bottomLeft": 0, "bottomRight": 0 }}
-					overflow="visible">
-					<Frame width={1}
+					cornerRadius={{
+						topLeft: 0,
+						topRight: 0,
+						bottomLeft: 0,
+						bottomRight: 0,
+					}}
+					overflow="visible"
+				>
+					<Frame
+						width={1}
 						height={200}
 						name="Border"
 						blendMode="pass-through"
 						fill={theme.colorBorder}
-						cornerRadius={{ "topLeft": 0, "topRight": 0, "bottomLeft": 0, "bottomRight": 0 }}
-						overflow="hidden">
-					</Frame>
+						cornerRadius={{
+							topLeft: 0,
+							topRight: 0,
+							bottomLeft: 0,
+							bottomRight: 0,
+						}}
+						overflow="hidden"
+					></Frame>
 				</Frame>
-				<AutoLayout width="fill-parent"
+				<AutoLayout
+					width="fill-parent"
 					name="Content"
 					x={1}
 					blendMode="pass-through"
-					padding={{ "top": 14 * theme.paddingScaleY, "right": 14 * theme.paddingScaleX, "bottom": 14 * theme.paddingScaleY, "left": (14 * theme.paddingScaleX) - 1 }}
+					padding={{
+						top: 14 * theme.paddingScaleY,
+						right: 14 * theme.paddingScaleX,
+						bottom: 14 * theme.paddingScaleY,
+						left: 14 * theme.paddingScaleX - 1,
+					}}
 					spacing={10}
 					stroke={strokePaint}
 					strokeWidth={strokeWidth}
-					overflow="visible">
-					<Text width="fill-parent" href={href}
+					overflow="visible"
+				>
+					<Text
+						width="fill-parent"
+						href={href}
 						name="Text"
 						x={13}
 						y={14}
@@ -1660,36 +1878,40 @@ function Main() {
 						fontWeight={600}
 						fontSize={theme.textSize * 1.333}
 						verticalAlignText="center"
-						textDecoration={hrefBorder}>
+						textDecoration={hrefBorder}
+					>
 						{data}
 					</Text>
 				</AutoLayout>
 			</AutoLayout>
-
-
-		)
-
+		);
 	}
 
 	function ColumnLetter({ children, rowIndex, colIndex, id, col }) {
-		let [colId, rowId] = id.split(":")
+		let [colId, rowId] = id.split(":");
 
-		var width = setWidth(col, theme)
-		var widthRendered = width * theme.columnWidthMultiplier
+		var width = setWidth(col, theme);
+		var widthRendered = width * theme.columnWidthMultiplier;
 
 		return (
-			<AutoLayout width={widthRendered}
+			<AutoLayout
+				width={widthRendered}
 				name="ColumnLetter"
 				x={46}
 				blendMode="pass-through"
 				fill={theme.colorBgSecondary}
-				cornerRadius={{ "topLeft": 0, "topRight": 0, "bottomLeft": 0, "bottomRight": 0 }}
-
+				cornerRadius={{
+					topLeft: 0,
+					topRight: 0,
+					bottomLeft: 0,
+					bottomRight: 0,
+				}}
 				overflow="hidden"
 				onClick={(event) => {
 					return new Promise((resolve) => {
 						// setStrokeWeight(2)
-						figma.showUI(`
+						figma.showUI(
+							`
 						<style>${__uiFiles__["css"]}</style>
 						<div id="actions" class="mt-xxsmall type--small">
 							<button class="customMenu__item" id="insertToLeft">Insert to Left</button>
@@ -1761,44 +1983,50 @@ function Main() {
 					}
 				})
 				</script>
-			`, { title: `Column ${alphabet[colIndex]}`, width: 200, height: 308+8+8, themeColors: true });
-			// position: { x: event.canvasX + (10 / figma.viewport.zoom), y: event.canvasY - (48 / figma.viewport.zoom) }
+			`,
+							{
+								title: `Column ${alphabet[colIndex]}`,
+								width: 200,
+								height: 308 + 8 + 8,
+								themeColors: true,
+							}
+						);
+						// position: { x: event.canvasX + (10 / figma.viewport.zoom), y: event.canvasY - (48 / figma.viewport.zoom) }
 						figma.ui.onmessage = (message) => {
-
-							if (message.type === 'delete-column') {
-								removeColumn(colId)
+							if (message.type === "delete-column") {
+								removeColumn(colId);
 							}
 
-							if (message.type === 'insert-to-right') {
-								addColumn(colIndex)
+							if (message.type === "insert-to-right") {
+								addColumn(colIndex);
 							}
 
-							if (message.type === 'insert-to-left') {
-								addColumn(colIndex, 0)
+							if (message.type === "insert-to-left") {
+								addColumn(colIndex, 0);
 							}
 
-							if (message.type === 'move-to-right') {
-								moveColumn(colIndex)
+							if (message.type === "move-to-right") {
+								moveColumn(colIndex);
 							}
 
-							if (message.type === 'move-to-left') {
-								moveColumn(colIndex, -1)
+							if (message.type === "move-to-left") {
+								moveColumn(colIndex, -1);
 							}
 
-							if (message.type === 'sort-ascending') {
-								sortTable(colId, rows)
+							if (message.type === "sort-ascending") {
+								sortTable(colId, rows);
 							}
 
-							if (message.type === 'sort-descending') {
-								sortTable(colId, rows, true)
+							if (message.type === "sort-descending") {
+								sortTable(colId, rows, true);
 							}
 
-							if (message.type === 'resize-column') {
-								resizeColumn(colId, message.size)
+							if (message.type === "resize-column") {
+								resizeColumn(colId, message.size);
 							}
 
-							if (message.type === 'close-plugin') {
-								figma.closePlugin()
+							if (message.type === "close-plugin") {
+								figma.closePlugin();
 							}
 							// table[rowIndex][colIndex] = message
 							// updateTable(table, () => {
@@ -1807,37 +2035,49 @@ function Main() {
 							// setStrokeWeight(0)
 							// figma.notify(message);
 							// figma.notify(strokeWeight.toString())
-							resolve()
-						}
-					})
-				 }}>
-					 <Frame width={1}
-
+							resolve();
+						};
+					});
+				}}
+			>
+				<Frame
+					width={1}
 					height="fill-parent"
 					name="Border"
-					cornerRadius={{ "topLeft": 0, "topRight": 0, "bottomLeft": 0, "bottomRight": 0 }}
+					cornerRadius={{
+						topLeft: 0,
+						topRight: 0,
+						bottomLeft: 0,
+						bottomRight: 0,
+					}}
 					overflow="visible"
-					fill={theme.colorBorderGradient}></Frame>
+					fill={theme.colorBorderGradient}
+				></Frame>
 
-				 <AutoLayout
-				 width="fill-parent"
-				 padding={{ "top": 4 - 1, "right": 4 - 1, "bottom": 4 - 1, "left": 4 - 1 }}
-				 >
-					 <AutoLayout
+				<AutoLayout
+					width="fill-parent"
+					padding={{
+						top: 4 - 1,
+						right: 4 - 1,
+						bottom: 4 - 1,
+						left: 4 - 1,
+					}}
+				>
+					<AutoLayout
 						name="Hover"
 						cornerRadius={2}
 						overflow="visible"
 						hoverStyle={{
 							fill: theme.colorBgTertiary,
-						  }}
+						}}
 						width="fill-parent"
 						horizontalAlignItems="center"
 						verticalAlignItems="center"
 						height={theme.columnLetterHeight}
-						>
-							<Text width="fill-parent"
+					>
+						<Text
+							width="fill-parent"
 							name="Column Letter"
-
 							x={4}
 							y={4}
 							blendMode="pass-through"
@@ -1846,43 +2086,54 @@ function Main() {
 							fontFamily="Inter"
 							fontWeight={600}
 							horizontalAlignText="center"
-							lineHeight={26}>
+							lineHeight={26}
+						>
 							{alphabet[colIndex]}
 						</Text>
 					</AutoLayout>
-				 </AutoLayout>
-
+				</AutoLayout>
 			</AutoLayout>
-		)
+		);
 	}
 
 	function RowNumber({ children, rowIndex, colIndex, id, lastRow, event }) {
-
-		let [colId, rowId] = id.split(":")
-		let cornerRadius : any = 2
+		let [colId, rowId] = id.split(":");
+		let cornerRadius: any = 2;
 
 		if (lastRow) {
 			cornerRadius = {
 				topLeft: 2,
 				topRight: 2,
 				bottomLeft: 5,
-				bottomRight: 2
-			  }
+				bottomRight: 2,
+			};
 		}
 
 		return (
-			<AutoLayout width={theme.rowNumberWidth}
+			<AutoLayout
+				width={theme.rowNumberWidth}
 				height="fill-parent"
 				name="RowNumber"
 				blendMode="pass-through"
 				fill={theme.colorBgSecondary}
-				cornerRadius={{ "topLeft": 0, "topRight": 0, "bottomLeft": 0, "bottomRight": 0 }}
-				padding={{ "top": 4 - 1, "right": 4 - 1, "bottom": 4 - 1, "left": 4 - 1 }}
+				cornerRadius={{
+					topLeft: 0,
+					topRight: 0,
+					bottomLeft: 0,
+					bottomRight: 0,
+				}}
+				padding={{
+					top: 4 - 1,
+					right: 4 - 1,
+					bottom: 4 - 1,
+					left: 4 - 1,
+				}}
 				verticalAlignItems="center"
 				overflow="hidden"
 				onClick={(event) => {
 					return new Promise((resolve) => {
-						figma.showUI(`
+						figma.showUI(
+							`
 						<style>${__uiFiles__["css"]}</style>
 
 						<div id="actions" class="mt-xxsmall type--small">
@@ -1929,82 +2180,102 @@ function Main() {
 					parent.postMessage({ pluginMessage: {type: 'move-up'} }, '*');
 				})
 				</script>
-			`, { title: `Row ${rowIndex}`, width: 200, height: 184 + 8 + 8, themeColors: true});
-			// position: { x: event.canvasX + (10 / figma.viewport.zoom), y: event.canvasY - (48 / figma.viewport.zoom)}
+			`,
+							{
+								title: `Row ${rowIndex}`,
+								width: 200,
+								height: 184 + 8 + 8,
+								themeColors: true,
+							}
+						);
+						// position: { x: event.canvasX + (10 / figma.viewport.zoom), y: event.canvasY - (48 / figma.viewport.zoom)}
 						figma.ui.onmessage = (message) => {
-
-							if (message.type === 'delete-row') {
-								removeRow(rowId)
+							if (message.type === "delete-row") {
+								removeRow(rowId);
 							}
 
-							if (message.type === 'insert-above') {
-								addRow(rowIndex, 0)
+							if (message.type === "insert-above") {
+								addRow(rowIndex, 0);
 							}
 
-							if (message.type === 'insert-below') {
-								addRow(rowIndex, 1)
+							if (message.type === "insert-below") {
+								addRow(rowIndex, 1);
 							}
 
-							if (message.type === 'move-down') {
-								moveRow(rowIndex)
+							if (message.type === "move-down") {
+								moveRow(rowIndex);
 							}
 
-							if (message.type === 'move-up') {
-								moveRow(rowIndex, -1)
+							if (message.type === "move-up") {
+								moveRow(rowIndex, -1);
 							}
 
-							if (message.type === 'close-plugin') {
-								figma.closePlugin()
+							if (message.type === "close-plugin") {
+								figma.closePlugin();
 							}
 
-							resolve()
-						}
-					})
+							resolve();
+						};
+					});
 				}}
 			>
 				<AutoLayout
-						name="Hover"
-						cornerRadius={cornerRadius}
-						overflow="visible"
-						hoverStyle={{
-							fill: theme.colorBgTertiary,
-						  }}
+					name="Hover"
+					cornerRadius={cornerRadius}
+					overflow="visible"
+					hoverStyle={{
+						fill: theme.colorBgTertiary,
+					}}
+					width="fill-parent"
+					height="fill-parent"
+					horizontalAlignItems="center"
+					verticalAlignItems="center"
+				>
+					<Text
 						width="fill-parent"
-						height="fill-parent"
-						horizontalAlignItems="center"
-						verticalAlignItems="center"
-						>
-				<Text width="fill-parent"
-					name="Text"
-					x={4}
-					y={16}
-					blendMode="pass-through"
-					fill={theme.colorTextTertiary}
-					fontSize={theme.textSize}
-					fontFamily="Inter"
-					fontWeight={600}
-					horizontalAlignText="center"
-					verticalAlignText="center">
-					{rowIndex}
-				</Text>
+						name="Text"
+						x={4}
+						y={16}
+						blendMode="pass-through"
+						fill={theme.colorTextTertiary}
+						fontSize={theme.textSize}
+						fontFamily="Inter"
+						fontWeight={600}
+						horizontalAlignText="center"
+						verticalAlignText="center"
+					>
+						{rowIndex}
+					</Text>
 				</AutoLayout>
 			</AutoLayout>
-		)
+		);
 	}
 
 	function EmptyRowNumber({ children }) {
 		return (
-			<AutoLayout width={theme.rowNumberWidth}
+			<AutoLayout
+				width={theme.rowNumberWidth}
 				height="fill-parent"
 				name="RowNumber"
 				blendMode="pass-through"
 				fill={theme.colorBgSecondary}
-				cornerRadius={{ "topLeft": 0, "topRight": 0, "bottomLeft": 0, "bottomRight": 0 }}
-				padding={{ "top": 4 - 1, "right": 4 - 1, "bottom": 4 - 1, "left": 4 - 1 }}
+				cornerRadius={{
+					topLeft: 0,
+					topRight: 0,
+					bottomLeft: 0,
+					bottomRight: 0,
+				}}
+				padding={{
+					top: 4 - 1,
+					right: 4 - 1,
+					bottom: 4 - 1,
+					left: 4 - 1,
+				}}
 				verticalAlignItems="center"
 				overflow="hidden"
 			>
-				<Text width="fill-parent"
+				<Text
+					width="fill-parent"
 					name="Text"
 					x={4}
 					y={16}
@@ -2014,84 +2285,142 @@ function Main() {
 					fontFamily="Inter"
 					fontWeight={600}
 					horizontalAlignText="center"
-					verticalAlignText="center">
+					verticalAlignText="center"
+				>
 					{children}
 				</Text>
 			</AutoLayout>
-		)
+		);
 	}
 
-	function Row({children, rowIndex, lastRow}) {
-		let effect = theme.shadowBorderBottom
-		let padding = { "top": 0, "right": 0, "bottom": 1, "left": 0 }
+	function Row({ children, rowIndex, lastRow }) {
+		let effect = theme.shadowBorderBottom;
+		let padding = { top: 0, right: 0, bottom: 1, left: 0 };
 		if (lastRow) {
-			effect = []
-			padding = 0
+			effect = [];
+			padding = 0;
 		}
 		return (
-			<AutoLayout name="Row"
+			<AutoLayout
+				name="Row"
 				y={71}
 				blendMode="pass-through"
 				fill={theme.colorBg}
-				cornerRadius={{ "topLeft": 0, "topRight": 0, "bottomLeft": 0, "bottomRight": 0 }}
+				cornerRadius={{
+					topLeft: 0,
+					topRight: 0,
+					bottomLeft: 0,
+					bottomRight: 0,
+				}}
 				padding={padding}
 				effect={effect}
-				overflow="hidden">
+				overflow="hidden"
+			>
 				{children}
 			</AutoLayout>
-		)
-
+		);
 	}
 
-	function Rows({children}) {
+	function Rows({ children }) {
 		return (
-			<AutoLayout name="Rows"
+			<AutoLayout
+				name="Rows"
 				y={6}
 				blendMode="pass-through"
-				cornerRadius={{ "topLeft": 0, "topRight": 0, "bottomLeft": 0, "bottomRight": 0 }}
-				padding={{ "top": 0, "right": 0, "bottom": 0, "left": 0 }}
+				cornerRadius={{
+					topLeft: 0,
+					topRight: 0,
+					bottomLeft: 0,
+					bottomRight: 0,
+				}}
+				padding={{ top: 0, right: 0, bottom: 0, left: 0 }}
 				direction="vertical"
-				overflow="visible">
+				overflow="visible"
+			>
 				{children}
 			</AutoLayout>
-		)
+		);
 	}
 
-	function TopBorder({color}) {
-
-		var height = 6
-		var fill = { "type": "solid", "visible": true, "opacity": 1, "blendMode": "normal", "color": color }
+	function TopBorder({ color }) {
+		var height = 6;
+		var fill = {
+			type: "solid",
+			visible: true,
+			opacity: 1,
+			blendMode: "normal",
+			color: color,
+		};
 
 		if (color === "ukraine") {
 			fill = {
 				type: "gradient-linear",
 				gradientHandlePositions: [
-				  { x: 0.5, y: 0 },
-				  { x: 1, y: 1 },
-				  { x: 0, y: 0 }
+					{ x: 0.5, y: 0 },
+					{ x: 1, y: 1 },
+					{ x: 0, y: 0 },
 				],
 				gradientStops: [
-				  { position: 0, color: {"r":0,"g":0.4156862795352936,"b":0.8588235378265381,"a":1} },
-				  { position: 0.499, color: {"r":0,"g":0.4156862795352936,"b":0.8588235378265381,"a":1} },
-				  { position: 0.5, color: {"r":0.9921568632125854,"g":0.8313725590705872,"b":0.0117647061124444,"a":1} },
-				  { position: 1, color: {"r":0.9921568632125854,"g":0.8313725590705872,"b":0.0117647061124444,"a":1} }
-				]
-			  }
+					{
+						position: 0,
+						color: {
+							r: 0,
+							g: 0.4156862795352936,
+							b: 0.8588235378265381,
+							a: 1,
+						},
+					},
+					{
+						position: 0.499,
+						color: {
+							r: 0,
+							g: 0.4156862795352936,
+							b: 0.8588235378265381,
+							a: 1,
+						},
+					},
+					{
+						position: 0.5,
+						color: {
+							r: 0.9921568632125854,
+							g: 0.8313725590705872,
+							b: 0.0117647061124444,
+							a: 1,
+						},
+					},
+					{
+						position: 1,
+						color: {
+							r: 0.9921568632125854,
+							g: 0.8313725590705872,
+							b: 0.0117647061124444,
+							a: 1,
+						},
+					},
+				],
+			};
 		}
 		return (
-			<Frame width="fill-parent"
+			<Frame
+				width="fill-parent"
 				height={height}
 				name="Border"
 				fill={fill}
-				cornerRadius={{ "topLeft": 0, "topRight": 0, "bottomLeft": 0, "bottomRight": 0 }}
-				overflow="hidden">
-			</Frame>
-		)
+				cornerRadius={{
+					topLeft: 0,
+					topRight: 0,
+					bottomLeft: 0,
+					bottomRight: 0,
+				}}
+				overflow="hidden"
+			></Frame>
+		);
 	}
 
-	function Table({children}) {
+	function Table({ children }) {
 		return (
-			<AutoLayout name="Table"
+			<AutoLayout
+				name="Table"
 				x={11234}
 				y={1555}
 				blendMode="pass-through"
@@ -2100,24 +2429,29 @@ function Main() {
 					type: "drop-shadow",
 					color: "#0000001A",
 					offset: {
-					  x: 0,
-					  y: 2,
+						x: 0,
+						y: 2,
 					},
 					blur: 4,
-				  }}
-				  fill="#FFF"
-				  stroke="#0000000A"
-				  strokeAlign="outside"
-
+				}}
+				fill="#FFF"
+				stroke="#0000000A"
+				strokeAlign="outside"
 				// stroke={{ "type": "solid", "visible": true, "opacity": 0.10000000149011612, "blendMode": "normal", "color": { "r": 0, "g": 0, "b": 0, "a": 0.10000000149011612 } }}
 				// strokeWidth={0.5}
-				cornerRadius={{ "topLeft": 8, "topRight": 8, "bottomLeft": 8, "bottomRight": 8 }}
+				cornerRadius={{
+					topLeft: 8,
+					topRight: 8,
+					bottomLeft: 8,
+					bottomRight: 8,
+				}}
 				// effect={[{ "type": "drop-shadow", "color": { "r": 0, "g": 0, "b": 0, "a": 0.15000000596046448 }, "offset": { "x": 0, "y": 2 }, "spread": 0, "visible": true, "blendMode": "normal", "showShadowBehindNode": true, "blur": 4 }]}
 				direction="vertical"
-				overflow="hidden">
+				overflow="hidden"
+			>
 				{children}
 			</AutoLayout>
-		)
+		);
 	}
 
 	return (
@@ -2126,54 +2460,97 @@ function Main() {
 			<Title key="title"></Title>
 			<Rows key="rows">
 				{rows.map((rowId, rowIndex) => {
-					let lastRow = false
+					let lastRow = false;
 					if (rowIndex === rows.length - 1) {
-							lastRow = true
+						lastRow = true;
 					}
 
 					return (
 						<Row key={rowId[0]} lastRow={lastRow}>
 							{cols.map((colId, colIndex) => {
-								var cellId = `${colId[0]}:${rowId[0]}`
-								var cell = tableCells.get(`${colId[0]}:${rowId[0]}`) || { data: '' }
+								var cellId = `${colId[0]}:${rowId[0]}`;
+								var cell = tableCells.get(
+									`${colId[0]}:${rowId[0]}`
+								) || { data: "" };
 
-								var col = tableCols.get(colId[0])
+								var col = tableCols.get(colId[0]);
 
 								if (colIndex === 0 && rowIndex === 0) {
-									return <EmptyRowNumber key={cellId} ></EmptyRowNumber>
-								}
-								else if (colIndex === 0) {
-									return <RowNumber key={cellId}  id={cellId} rowIndex={rowIndex} colIndex={colIndex} lastRow={lastRow}>{cell}</RowNumber>
-								}
-								else {
+									return (
+										<EmptyRowNumber
+											key={cellId}
+										></EmptyRowNumber>
+									);
+								} else if (colIndex === 0) {
+									return (
+										<RowNumber
+											key={cellId}
+											id={cellId}
+											rowIndex={rowIndex}
+											colIndex={colIndex}
+											lastRow={lastRow}
+										>
+											{cell}
+										</RowNumber>
+									);
+								} else {
 									if (rowIndex === 0) {
-										return <ColumnLetter key={cellId} id={cellId} rowIndex={rowIndex} colIndex={colIndex} col={col}>{cell}</ColumnLetter>
-									}
-									else if (rowIndex === 1 && widgetFirstRowAsHeader) {
-										return <HeaderCell key={cellId} cell={cell} id={cellId} rowIndex={rowIndex} colIndex={colIndex} col={col}></HeaderCell>
-									}
-									else {
-										let cornerRadius : any = 0
+										return (
+											<ColumnLetter
+												key={cellId}
+												id={cellId}
+												rowIndex={rowIndex}
+												colIndex={colIndex}
+												col={col}
+											>
+												{cell}
+											</ColumnLetter>
+										);
+									} else if (
+										rowIndex === 1 &&
+										widgetFirstRowAsHeader
+									) {
+										return (
+											<HeaderCell
+												key={cellId}
+												cell={cell}
+												id={cellId}
+												rowIndex={rowIndex}
+												colIndex={colIndex}
+												col={col}
+											></HeaderCell>
+										);
+									} else {
+										let cornerRadius: any = 0;
 
-										if (colIndex === cols.length - 1 && rowIndex === rows.length -1) {
+										if (
+											colIndex === cols.length - 1 &&
+											rowIndex === rows.length - 1
+										) {
 											cornerRadius = {
-												bottomRight: 8
-											}
+												bottomRight: 8,
+											};
 										}
-										return <Cell key={cellId} cell={cell} id={cellId} rowIndex={rowIndex} colIndex={colIndex} col={col} cornerRadius={cornerRadius}></Cell>
+										return (
+											<Cell
+												key={cellId}
+												cell={cell}
+												id={cellId}
+												rowIndex={rowIndex}
+												colIndex={colIndex}
+												col={col}
+												cornerRadius={cornerRadius}
+											></Cell>
+										);
 									}
-
 								}
 							})}
 						</Row>
-
-					)
+					);
 				})}
 			</Rows>
 		</Table>
-	)
+	);
 }
 
-widget.register(Main)
-
-
+widget.register(Main);

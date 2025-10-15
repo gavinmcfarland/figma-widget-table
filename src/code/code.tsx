@@ -1373,15 +1373,36 @@ function Main() {
 							function exportToString(rows, cols) {
 								// Helper function to properly escape and format CSV cell values
 								const escapeCSVCell = (value: any): string => {
-									// Convert to string and handle undefined/null
-									const strValue =
-										value == null ? "" : String(value);
+									// Handle non-string types
+									if (value == null) return "";
+
+									// Convert to string, handling objects and arrays
+									let strValue: string;
+									if (typeof value === "object") {
+										try {
+											strValue = JSON.stringify(value);
+										} catch {
+											strValue = String(value);
+										}
+									} else {
+										strValue = String(value);
+									}
+
+									// Trim any leading/trailing whitespace
+									strValue = strValue.trim();
 
 									// Check if the value needs to be quoted
-									// Quote if it contains: comma, quote, newline, or carriage return
-									const needsQuoting = /[",\n\r]/.test(
-										strValue
-									);
+									// Quote if it contains: comma, quote, newline, carriage return, or tab
+									// This regex covers:
+									// - " (quote)
+									// - , (comma)
+									// - \n (newline/line feed)
+									// - \r (carriage return)
+									// - \t (tab)
+									// - \u2028 (Unicode line separator)
+									// - \u2029 (Unicode paragraph separator)
+									const needsQuoting =
+										/[",\n\r\t\u2028\u2029]/.test(strValue);
 
 									if (needsQuoting) {
 										// Escape quotes by doubling them
@@ -1416,7 +1437,10 @@ function Main() {
 										);
 									}
 
-									csvRows.push(cellValues.join(","));
+									// Only add non-empty rows
+									if (cellValues.some((val) => val !== "")) {
+										csvRows.push(cellValues.join(","));
+									}
 								}
 
 								return csvRows.join("\n");

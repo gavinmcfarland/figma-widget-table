@@ -61,7 +61,6 @@ function evalFunction(js) {
 			// 		value = (new Function('with(this) { ' + js + ' }')).call(context);
 			// 	} catch (e) {}
 			// }
-			console.log(e);
 		}
 	}
 
@@ -86,8 +85,6 @@ function evalData(data) {
 
 	return renderedData;
 }
-
-console.clear();
 
 function numToIndices(num: number): number[] {
 	const ret = [];
@@ -260,8 +257,6 @@ function Main() {
 		if (figma.editorType !== editorType) {
 			setEditorType(figma.editorType);
 			editorType = figma.editorType;
-
-			console.log(editorType);
 		}
 
 		// waitForTask(new Promise(resolve => {
